@@ -18,19 +18,19 @@ var _ = Describe("Handler", func() {
 
 		It("should push a task on the queue", func() {
 			// Arrange
-			expectedTaskId := "task:1"
+			expectedtaskID := "task:1"
 			json := `{"name": "test", "image": "alpine", "init": "init.sh"}`
 			req, _ := http.NewRequest("POST", "/handle", bytes.NewReader([]byte(json)))
 			taskSpec := &model.TaskSpec{Name: "test", Image: "alpine", Init: "init.sh"}
 			writer := httptest.NewRecorder()
-			taskQueueMock.On("Push", taskSpec).Return(expectedTaskId, nil)
+			taskQueueMock.On("Push", taskSpec).Return(expectedtaskID, nil)
 
 			// Act
 			handler.CreateTaskHandler(writer, req)
 
 			// Assert
 			assert.Equal(context, 201, writer.Code)
-			assert.Equal(context, expectedTaskId, writer.Body.String())
+			assert.Equal(context, expectedtaskID, writer.Body.String())
 		})
 	})
 })

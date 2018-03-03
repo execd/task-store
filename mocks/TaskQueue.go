@@ -9,13 +9,13 @@ type TaskQueue struct {
 	mock.Mock
 }
 
-// GetTaskInfo provides a mock function with given fields: taskId
-func (_m *TaskQueue) GetTaskInfo(taskId string) (*model.TaskSpec, error) {
-	ret := _m.Called(taskId)
+// GetTaskInfo provides a mock function with given fields: taskID
+func (_m *TaskQueue) GetTaskInfo(taskID string) (*model.TaskSpec, error) {
+	ret := _m.Called(taskID)
 
 	var r0 *model.TaskSpec
 	if rf, ok := ret.Get(0).(func(string) *model.TaskSpec); ok {
-		r0 = rf(taskId)
+		r0 = rf(taskID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.TaskSpec)
@@ -24,7 +24,7 @@ func (_m *TaskQueue) GetTaskInfo(taskId string) (*model.TaskSpec, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(taskId)
+		r1 = rf(taskID)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -10,8 +10,8 @@ import (
 
 var context = GinkgoT()
 
-var _ = Describe("TaskQueue", func() {
-	var taskQueue *TaskQueueImpl
+var _ = Describe("Queue", func() {
+	var taskQueue *QueueImpl
 	var directRedis *miniredis.Miniredis
 
 	BeforeEach(func() {
@@ -21,7 +21,7 @@ var _ = Describe("TaskQueue", func() {
 		}
 
 		redis := store.NewClient(s.Addr())
-		taskQueue = &TaskQueueImpl{redis: redis}
+		taskQueue = &QueueImpl{redis: redis}
 		directRedis = s
 
 	})
@@ -33,12 +33,12 @@ var _ = Describe("TaskQueue", func() {
 	Describe("GetTaskInfo", func() {
 		It("should retrieve a task spec when one exists with the given id", func() {
 			// Arrange
-			taskId := "task:1"
+			taskID := "task:1"
 			expectedTaskSpec := &model.TaskSpec{Image: "alpine", Name: "test", Init: "init.sh"}
-			taskQueue.redis.Set(taskId, expectedTaskSpec, 0)
+			taskQueue.redis.Set(taskID, expectedTaskSpec, 0)
 
 			// Act
-			taskSpec, err := taskQueue.GetTaskInfo(taskId)
+			taskSpec, err := taskQueue.GetTaskInfo(taskID)
 
 			// Assert
 			assert.Nil(context, err)
@@ -74,7 +74,7 @@ var _ = Describe("TaskQueue", func() {
 
 		It("should store successive tasks with incrementing id's", func() {
 			// Arrange
-			_, err := taskQueue.Push(expectedTaskSpec)
+			taskQueue.Push(expectedTaskSpec)
 
 			// Act
 			result, err := taskQueue.Push(expectedTaskSpec)

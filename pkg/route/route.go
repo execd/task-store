@@ -8,13 +8,15 @@ import (
 	"os"
 )
 
-type Service interface {
-}
+// Service interface for routes
+type Service interface{}
 
+// ServiceImpl is an implementation of Service
 type ServiceImpl struct {
 	Router *mux.Router
 }
 
+// Listen on the port defined by the env var PORT
 func (s *ServiceImpl) Listen() {
 	s.routes()
 	if port, exists := os.LookupEnv("PORT"); exists {
