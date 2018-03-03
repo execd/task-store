@@ -1,4 +1,4 @@
-package store
+package model
 
 import (
 	"encoding/json"
@@ -14,10 +14,9 @@ func (s *TaskSpec) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-func (e *TaskSpec) UnmarshalBinary(data []byte) error {
-	if err := json.Unmarshal(data, &e); err != nil {
+func (s *TaskSpec) UnmarshalBinary(data []byte) error {
+	if err := json.Unmarshal(data, s); err != nil {
 		return err
 	}
-
 	return nil
 }

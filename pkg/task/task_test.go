@@ -1,10 +1,11 @@
-package store
+package task
 
 import (
 	. "github.com/onsi/ginkgo"
 	"github.com/alicebob/miniredis"
 	"github.com/stretchr/testify/assert"
-	"github.com/wayofthepie/jobby/pkg/store"
+	"github.com/wayofthepie/jobby-taskman/pkg/store"
+	"github.com/wayofthepie/jobby-taskman/pkg/model"
 )
 
 var context = GinkgoT()
@@ -29,11 +30,11 @@ var _ = Describe("TaskQueue", func() {
 		defer directRedis.Close()
 	})
 
-	Describe("GetTaskInfo", func () {
-		It("should retrieve a task spec when one exists with the given id", func () {
+	Describe("GetTaskInfo", func() {
+		It("should retrieve a task spec when one exists with the given id", func() {
 			// Arrange
 			taskId := "task:1"
-			expectedTaskSpec := &TaskSpec{Image: "alpine", Name: "test", Init: "init.sh"}
+			expectedTaskSpec := &model.TaskSpec{Image: "alpine", Name: "test", Init: "init.sh"}
 			taskQueue.redis.Set(taskId, expectedTaskSpec, 0)
 
 			// Act
@@ -46,11 +47,8 @@ var _ = Describe("TaskQueue", func() {
 	})
 
 	Describe("Push", func() {
-		var expectedTaskSpec *TaskSpec
 
-		BeforeEach(func () {
-			expectedTaskSpec = &TaskSpec{Image: "alpine", Name: "test", Init: "init.sh"}
-		})
+		expectedTaskSpec := &model.TaskSpec{Image: "alpine", Name: "test", Init: "init.sh"}
 
 		It("should return the taskQueue length after successful push", func() {
 			// Act
@@ -58,7 +56,7 @@ var _ = Describe("TaskQueue", func() {
 
 			// Assert
 			assert.Nil(context, err)
-			assert.Equal(context, int64(1), result)
+			assert.Equal(context, "task:1", result)
 		})
 
 		It("should store task details as separate key", func() {
@@ -67,7 +65,7 @@ var _ = Describe("TaskQueue", func() {
 
 			// Assert
 			taskData, _ := directRedis.Get("task:1")
-			taskSpec := new(TaskSpec)
+			taskSpec := new(model.TaskSpec)
 			taskSpec.UnmarshalBinary([]byte(taskData))
 
 			assert.Nil(context, err)
@@ -79,15 +77,16 @@ var _ = Describe("TaskQueue", func() {
 			_, err := taskQueue.Push(expectedTaskSpec)
 
 			// Act
-			length, err := taskQueue.Push(expectedTaskSpec)
+			result, err := taskQueue.Push(expectedTaskSpec)
 
 			// Assert
 			taskData, _ := directRedis.Get("task:2")
-			taskSpec := new(TaskSpec)
+
+			taskSpec := new(model.TaskSpec)
 			taskSpec.UnmarshalBinary([]byte(taskData))
 
 			assert.Nil(context, err)
-			assert.Equal(context, int64(2), length)
+			assert.Equal(context, "task:2", result)
 			assert.Equal(context, expectedTaskSpec, taskSpec)
 		})
 

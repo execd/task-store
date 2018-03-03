@@ -1,8 +1,9 @@
-package store
+package task
 
 import (
 	"github.com/go-redis/redis"
 	"fmt"
+	"github.com/wayofthepie/jobby-taskman/pkg/model"
 )
 
 const TaskQueueKey = "taskQ"
@@ -10,39 +11,41 @@ const TaskIdPrefix = "task"
 const LastTaskId = "task:id"
 
 type TaskQueue interface {
-	Push(spec TaskSpec) (int64, error)
+	GetTaskInfo(taskId string) (*model.TaskSpec, error)
+	Push(spec *model.TaskSpec) (string, error)
 }
 
 type TaskQueueImpl struct {
 	redis *redis.Client
 }
 
-func (q *TaskQueueImpl) GetTaskInfo(taskId string) (*TaskSpec, error) {
+func (q *TaskQueueImpl) GetTaskInfo(taskId string) (*model.TaskSpec, error) {
 	scmd := q.redis.Get(taskId)
 	taskData, err := scmd.Result()
 	if err != nil {
-		return nil, fmt.Errorf("retrieving task with id %s failed with: %s", taskId, err.Error())
+		return nil, fmt.Errorf("retrieving model with id %s failed with: %s", taskId, err.Error())
 	}
-	taskSpec := new(TaskSpec)
+	taskSpec := new(model.TaskSpec)
 	taskSpec.UnmarshalBinary([]byte(taskData))
 	return taskSpec, nil
 }
 
-func (q *TaskQueueImpl) Push(spec *TaskSpec) (int64, error) {
-
+func (q *TaskQueueImpl) Push(spec *model.TaskSpec) (string, error) {
 	num, err := q.getNextTaskNumber()
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	taskId := buildTaskId(num)
 
 	err = q.createTask(taskId, spec)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
-	return q.pushOntoTaskQ(taskId)
+	_, err = q.pushOntoTaskQ(taskId)
+
+	return taskId, err
 }
 
 func (q *TaskQueueImpl) getNextTaskNumber() (int64, error) {
@@ -54,10 +57,10 @@ func (q *TaskQueueImpl) getNextTaskNumber() (int64, error) {
 	}
 }
 
-func (q *TaskQueueImpl) createTask(taskId string, spec *TaskSpec) error {
+func (q *TaskQueueImpl) createTask(taskId string, spec *model.TaskSpec) error {
 	icmd := q.redis.Set(taskId, spec, 0)
 	if _, err := icmd.Result(); err != nil {
-		return fmt.Errorf("creating task failed with error: %s", err.Error())
+		return fmt.Errorf("creating model failed with error: %s", err.Error())
 	}
 	return nil
 }
