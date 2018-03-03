@@ -9,5 +9,3 @@ func NewClient(address string) *redis.Client {
 		DB:       0,  // use default DB
 	})
 }
-
-

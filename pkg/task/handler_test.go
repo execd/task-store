@@ -1,13 +1,13 @@
 package task
 
 import (
-	. "github.com/onsi/ginkgo"
-	"github.com/wayofthepie/task-store/mocks"
 	"bytes"
-	"net/http/httptest"
-	"net/http"
+	. "github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/assert"
+	"github.com/wayofthepie/task-store/mocks"
 	"github.com/wayofthepie/task-store/pkg/model"
+	"net/http"
+	"net/http/httptest"
 )
 
 var _ = Describe("Handler", func() {
@@ -21,7 +21,7 @@ var _ = Describe("Handler", func() {
 			expectedTaskId := "task:1"
 			json := `{"name": "test", "image": "alpine", "init": "init.sh"}`
 			req, _ := http.NewRequest("POST", "/handle", bytes.NewReader([]byte(json)))
-			taskSpec := &model.TaskSpec{Name:"test", Image:"alpine", Init:"init.sh"}
+			taskSpec := &model.TaskSpec{Name: "test", Image: "alpine", Init: "init.sh"}
 			writer := httptest.NewRecorder()
 			taskQueueMock.On("Push", taskSpec).Return(expectedTaskId, nil)
 

@@ -1,11 +1,11 @@
 package route
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
 	"fmt"
-	"os"
+	"github.com/gorilla/mux"
 	"log"
+	"net/http"
+	"os"
 )
 
 type Service interface {

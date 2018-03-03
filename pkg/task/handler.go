@@ -1,10 +1,10 @@
 package task
 
 import (
-	"net/http"
+	"fmt"
 	"github.com/wayofthepie/task-store/pkg/model"
 	"io/ioutil"
-	"fmt"
+	"net/http"
 )
 
 type Handler interface {

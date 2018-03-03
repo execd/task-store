@@ -1,8 +1,8 @@
 package task
 
 import (
-	"github.com/go-redis/redis"
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/wayofthepie/task-store/pkg/model"
 )
 

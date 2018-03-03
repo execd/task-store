@@ -1,11 +1,11 @@
 package task
 
 import (
-	. "github.com/onsi/ginkgo"
 	"github.com/alicebob/miniredis"
+	. "github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/assert"
-	"github.com/wayofthepie/task-store/pkg/store"
 	"github.com/wayofthepie/task-store/pkg/model"
+	"github.com/wayofthepie/task-store/pkg/store"
 )
 
 var context = GinkgoT()
