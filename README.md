@@ -1,2 +1,2 @@
-# Task Manager
-Simple redis based task manager/store.
+# Task Store
+Simple redis based task store.
