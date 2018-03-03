@@ -21,8 +21,6 @@ before_script:
   - go get github.com/fzipp/gocyclo
   - go get ./...
 
-# script always run to completion (set +e). All of these code checks are must haves
-# in a modern Go project.
 script:
   - test -z $(gofmt -s -l $GO_FILES)         # Fail if a .go file hasn't been formatted with gofmt
   - go test -v -race ./...                   # Run all the tests with the race detector enabled

@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/alicebob/miniredis"
 	"github.com/stretchr/testify/assert"
-	"github.com/wayofthepie/jobby-taskman/pkg/store"
-	"github.com/wayofthepie/jobby-taskman/pkg/model"
+	"github.com/wayofthepie/task-store/pkg/store"
+	"github.com/wayofthepie/task-store/pkg/model"
 )
 
 var context = GinkgoT()

@@ -2,12 +2,12 @@ package task
 
 import (
 	. "github.com/onsi/ginkgo"
-	"github.com/wayofthepie/jobby-taskman/mocks"
+	"github.com/wayofthepie/task-store/mocks"
 	"bytes"
 	"net/http/httptest"
 	"net/http"
 	"github.com/stretchr/testify/assert"
-	"github.com/wayofthepie/jobby-taskman/pkg/model"
+	"github.com/wayofthepie/task-store/pkg/model"
 )
 
 var _ = Describe("Handler", func() {

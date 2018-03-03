@@ -3,7 +3,7 @@ package task
 import (
 	"github.com/go-redis/redis"
 	"fmt"
-	"github.com/wayofthepie/jobby-taskman/pkg/model"
+	"github.com/wayofthepie/task-store/pkg/model"
 )
 
 const TaskQueueKey = "taskQ"

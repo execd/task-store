@@ -2,7 +2,7 @@ package taskman
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/wayofthepie/jobby-taskman/pkg/route"
+	"github.com/wayofthepie/task-store/pkg/route"
 )
 
 

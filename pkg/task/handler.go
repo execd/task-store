@@ -2,7 +2,7 @@ package task
 
 import (
 	"net/http"
-	"github.com/wayofthepie/jobby-taskman/pkg/model"
+	"github.com/wayofthepie/task-store/pkg/model"
 	"io/ioutil"
 	"fmt"
 )
