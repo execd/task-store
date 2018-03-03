@@ -22,6 +22,11 @@ type Queue interface {
 	Push(spec *model.TaskSpec) (string, error)
 }
 
+// NewQueueImpl : build a QueueImpl
+func NewQueueImpl(redis *redis.Client) *QueueImpl {
+	return &QueueImpl{redis: redis}
+}
+
 // QueueImpl : redis implementation of a Queue
 type QueueImpl struct {
 	redis *redis.Client
