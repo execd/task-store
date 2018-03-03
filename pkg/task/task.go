@@ -12,8 +12,8 @@ const TaskQueueKey = "taskQ"
 // TaskIDPrefix : the prefix for task id's
 const TaskIDPrefix = "task"
 
-// LasttaskID : the id of the key for the last task id
-const LasttaskID = "task:id"
+// LastTaskID : the id of the key for the last task id
+const LastTaskID = "task:id"
 
 // Queue : a Queue allows pushing popping and reading
 // of task information from a queue
@@ -64,7 +64,7 @@ func (q *QueueImpl) Push(spec *model.TaskSpec) (string, error) {
 }
 
 func (q *QueueImpl) getNextTaskNumber() (int64, error) {
-	id, err := q.redis.Incr(LasttaskID).Result()
+	id, err := q.redis.Incr(LastTaskID).Result()
 	if err != nil {
 		return 0, fmt.Errorf("reserving an id failed with: %s", err.Error())
 	}
