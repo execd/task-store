@@ -27,7 +27,7 @@ func NewQueueImpl(redis *redis.Client) *QueueImpl {
 	return &QueueImpl{redis: redis}
 }
 
-// QueueImpl : redis implementation of a Queue
+// QueueImpl : redis implementation of a Queue.
 type QueueImpl struct {
 	redis *redis.Client
 }

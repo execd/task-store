@@ -10,7 +10,7 @@ import (
 
 var context = GinkgoT()
 
-var _ = Describe("Queue", func() {
+var _ = Describe("QueueImpl", func() {
 	var taskQueue *QueueImpl
 	var directRedis *miniredis.Miniredis
 
