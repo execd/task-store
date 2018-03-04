@@ -6,9 +6,10 @@ import (
 
 // TaskSpec is the specification for a task
 type TaskSpec struct {
-	Name  string `json:"name"`
-	Image string `json:"image"`
-	Init  string `json:"init"`
+	Name     string   `json:"name"`
+	Image    string   `json:"image"`
+	Init     string   `json:"init"`
+	InitArgs []string `json:"initArgs"`
 }
 
 // MarshalBinary marshals a TaskSpec
