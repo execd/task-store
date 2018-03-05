@@ -21,7 +21,8 @@ func initializeRouter() route.Service {
 	amqp.PublishWork(taskSpec)
 	redis := store.NewClient("localhost:6379")
 	taskQueue := task.NewQueueImpl(redis)
-	taskHandler := task.NewHandlerImpl(taskQueue)
+
+	taskHandler := task.NewHandlerImpl(taskQueue, amqp)
 	router := route.NewServiceImpl(mux.NewRouter(), taskHandler)
 	return router
 }

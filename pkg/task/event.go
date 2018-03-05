@@ -8,7 +8,9 @@ import (
 const queueName = "work_queue"
 
 // EventService : interface for an EventService
-type EventService interface{}
+type EventService interface {
+	PublishWork(spec *model.TaskSpec) error
+}
 
 // AmqpEventService : amqp implementation of an event service
 type AmqpEventService struct {

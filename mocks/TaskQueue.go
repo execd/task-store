@@ -1,4 +1,3 @@
-// Package mocks holds mocks for our interfaces.
 package mocks
 
 import mock "github.com/stretchr/testify/mock"

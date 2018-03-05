@@ -7,13 +7,13 @@ import (
 )
 
 // TaskQueueKey : the key for a task queue
-const TaskQueueKey = "taskQ"
+const taskQueueKey = "taskQ"
 
 // TaskIDPrefix : the prefix for task id's
-const TaskIDPrefix = "task"
+const taskIDPrefix = "task"
 
 // LastTaskID : the id of the key for the last task id
-const LastTaskID = "task:id"
+const lastTaskID = "task:id"
 
 // Queue : a Queue allows pushing popping and reading
 // of task information from a queue
@@ -64,7 +64,7 @@ func (q *QueueImpl) Push(spec *model.TaskSpec) (string, error) {
 }
 
 func (q *QueueImpl) getNextTaskNumber() (int64, error) {
-	id, err := q.redis.Incr(LastTaskID).Result()
+	id, err := q.redis.Incr(lastTaskID).Result()
 	if err != nil {
 		return 0, fmt.Errorf("reserving an id failed with: %s", err.Error())
 	}
@@ -80,7 +80,7 @@ func (q *QueueImpl) createTask(taskID string, spec *model.TaskSpec) error {
 }
 
 func (q *QueueImpl) pushOntoTaskQ(taskID string) (int64, error) {
-	length, err := q.redis.LPush(TaskQueueKey, taskID).Result()
+	length, err := q.redis.LPush(taskQueueKey, taskID).Result()
 	if err == nil {
 		return length, nil
 	}
@@ -88,5 +88,5 @@ func (q *QueueImpl) pushOntoTaskQ(taskID string) (int64, error) {
 }
 
 func buildtaskID(num int64) string {
-	return fmt.Sprintf("%s:%d", TaskIDPrefix, num)
+	return fmt.Sprintf("%s:%d", taskIDPrefix, num)
 }
