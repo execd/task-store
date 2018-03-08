@@ -1,19 +1,19 @@
-package task
+package task_test
 
 import (
 	"github.com/alicebob/miniredis"
 	. "github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/assert"
-	"github.com/wayofthepie/task-store/pkg/model"
 	"github.com/wayofthepie/task-store/pkg/store"
-	"fmt"
 	"log"
+	"github.com/satori/go.uuid"
+	"github.com/wayofthepie/task-store/pkg/task"
 )
 
 var context = GinkgoT()
 
-var _ = Describe("QueueImpl", func() {
-	var taskQueue *QueueImpl
+var _ = Describe("queue", func() {
+	var taskQueue *task.QueueImpl
 	var directRedis *miniredis.Miniredis
 
 	BeforeEach(func() {
@@ -23,7 +23,7 @@ var _ = Describe("QueueImpl", func() {
 		}
 
 		redis := store.NewClient(s.Addr())
-		taskQueue = &QueueImpl{redis: redis}
+		taskQueue = task.NewQueueImpl(redis)
 		directRedis = s
 	})
 
@@ -31,30 +31,14 @@ var _ = Describe("QueueImpl", func() {
 		defer directRedis.Close()
 	})
 
-	Describe("Push", func() {
-
-		expectedTaskSpec := &model.Spec{Image: "alpine", Name: "test", Init: "init.sh"}
-
-		It("should store task details as separate key", func() {
-			// Act
-			id, err := taskQueue.Push(expectedTaskSpec)
-			failOnError(err)
-			expectedTaskSpec.ID = id
-
-			// Assert
-			taskData, _ := directRedis.Get(fmt.Sprintf("task:%s", id.String()))
-			taskSpec := new(model.Spec)
-			taskSpec.UnmarshalBinary([]byte(taskData))
-
-			assert.Nil(context, err)
-			assert.Equal(context, expectedTaskSpec, taskSpec)
-		})
-
+	Describe("pushing a task on the queue", func() {
 		It("should add task to task queue", func() {
+			// Arrange
+			givenId := uuid.Must(uuid.NewV4())
+
 			// Act
-			id, err := taskQueue.Push(expectedTaskSpec)
+			_, err := taskQueue.Push(&givenId)
 			failOnError(err)
-			expectedTaskSpec.ID = id
 
 			// Assert
 			taskIDs, err := directRedis.List("taskQ")
@@ -62,7 +46,32 @@ var _ = Describe("QueueImpl", func() {
 
 			assert.Nil(context, err)
 			assert.Len(context, taskIDs, 1)
-			assert.Contains(context, taskIDs, id.String())
+			assert.Contains(context, taskIDs, givenId.String())
+		})
+
+		It("should return pushed task id", func () {
+			// Arrange
+			givenId := uuid.Must(uuid.NewV4())
+
+			// Act
+			id, err := taskQueue.Push(&givenId)
+			failOnError(err)
+
+			// Assert
+			assert.Nil(context, err)
+			assert.Equal(context, givenId, *id)
+		})
+
+		It("should return error if pushing task onto queue fails", func () {
+			//Arrange
+			directRedis.Close()
+			givenId := uuid.Must(uuid.NewV4())
+
+			// Act
+			_, err := taskQueue.Push(&givenId)
+
+			// Assert
+			assert.NotNil(context, err)
 		})
 	})
 })
