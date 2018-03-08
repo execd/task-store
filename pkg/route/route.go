@@ -29,7 +29,7 @@ func NewServiceImpl(router *mux.Router, taskHandler task.Handler) *ServiceImpl {
 func (s *ServiceImpl) Listen() {
 	s.routes()
 	if port, exists := os.LookupEnv("PORT"); exists {
-		fmt.Printf("Running %s", port)
+		fmt.Printf("Running %s\n", port)
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", port), s.router))
 	} else {
 		log.Fatal("PORT env var not set")
