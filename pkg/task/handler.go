@@ -2,9 +2,10 @@ package task
 
 import (
 	"fmt"
-	"github.com/wayofthepie/task-store/pkg/model"
 	"io/ioutil"
 	"net/http"
+	"github.com/wayofthepie/task-store/pkg/event"
+	"github.com/wayofthepie/task-store/pkg/model"
 )
 
 // Handler : interface for a task Handler
@@ -15,11 +16,11 @@ type Handler interface {
 // HandlerImpl : implementation of a task Handler
 type HandlerImpl struct {
 	taskQueue    Queue
-	eventService EventService
+	eventService event.Rabbit
 }
 
 // NewHandlerImpl creates a new HandlerImpl
-func NewHandlerImpl(taskQueue Queue, eventService EventService) *HandlerImpl {
+func NewHandlerImpl(taskQueue Queue, eventService event.Rabbit) *HandlerImpl {
 	return &HandlerImpl{taskQueue: taskQueue, eventService: eventService}
 }
 
@@ -32,7 +33,7 @@ func (h *HandlerImpl) CreateTaskHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	taskSpec := new(model.TaskSpec)
+	taskSpec := new(model.Spec)
 
 	if err = taskSpec.UnmarshalBinary(body); err != nil {
 		build500Error("failed to parse request body", err, w)
@@ -52,8 +53,13 @@ func (h *HandlerImpl) CreateTaskHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	data, err := taskID.MarshalText()
+	if  err != nil {
+		build500Error("Failed to marshal UUID!", err, w)
+		return
+	}
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(taskID))
+	w.Write(data)
 }
 
 func build500Error(customMsg string, err error, w http.ResponseWriter) {
