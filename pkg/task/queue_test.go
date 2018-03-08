@@ -49,6 +49,21 @@ var _ = Describe("QueueImpl", func() {
 			assert.Nil(context, err)
 			assert.Equal(context, expectedTaskSpec, taskSpec)
 		})
+
+		It("should add task to task queue", func() {
+			// Act
+			id, err := taskQueue.Push(expectedTaskSpec)
+			failOnError(err)
+			expectedTaskSpec.ID = id
+
+			// Assert
+			taskIDs, err := directRedis.List("taskQ")
+			failOnError(err)
+
+			assert.Nil(context, err)
+			assert.Len(context, taskIDs, 1)
+			assert.Contains(context, taskIDs, id.String())
+		})
 	})
 })
 

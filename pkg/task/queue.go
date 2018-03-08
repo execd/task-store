@@ -33,7 +33,7 @@ type QueueImpl struct {
 func (q *QueueImpl) Push(spec *model.Spec) (*uuid.UUID, error) {
 	id, err := uuid.NewV4()
 	if err != nil {
-		return nil,fmt.Errorf("something went wrong when attempting to generate a new uuid: %s", err)
+		return nil, fmt.Errorf("something went wrong when attempting to generate a new uuid: %s", err)
 	}
 
 	err = q.createTask(&id, *spec)
@@ -48,9 +48,12 @@ func (q *QueueImpl) Push(spec *model.Spec) (*uuid.UUID, error) {
 
 func (q *QueueImpl) createTask(id *uuid.UUID, spec model.Spec) error {
 	spec.ID = id
-	_, err := q.redis.Set(buildTaskId(id), &spec, 0).Result()
+	applied, err := q.redis.SetNX(buildTaskId(id), &spec, 0).Result()
 	if err != nil {
 		return fmt.Errorf("creating model failed with error: %s", err.Error())
+	}
+	if !applied {
+		return fmt.Errorf("task with id %s already exists: %s", id.String(), err.Error())
 	}
 	return nil
 }
