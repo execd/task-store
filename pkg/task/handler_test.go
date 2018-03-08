@@ -1,4 +1,4 @@
-package task
+package task_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"github.com/satori/go.uuid"
+	"github.com/wayofthepie/task-store/pkg/task"
 )
 
 var _ = Describe("Handler", func() {
@@ -17,7 +18,7 @@ var _ = Describe("Handler", func() {
 		taskQueueMock := new(mocks.Queue)
 		rabbitMock := new(mocks.Rabbit)
 		taskSpec := &model.Spec{Name: "test", Image: "alpine", Init: "init.sh", InitArgs: []string{"10"}}
-		handler := NewHandlerImpl(taskQueueMock, rabbitMock)
+		handler := task.NewHandlerImpl(taskQueueMock, rabbitMock)
 		expectedTaskID := uuid.Must(uuid.NewV4())
 		json := `{"name": "test", "image": "alpine", "init": "init.sh", "initArgs":["10"]}`
 		req, _ := http.NewRequest("POST", "/handle", bytes.NewReader([]byte(json)))
