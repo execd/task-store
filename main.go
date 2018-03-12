@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/wayofthepie/task-store/cmd/route"
+	"github.com/wayofthepie/task-store/pkg/route"
 	"github.com/wayofthepie/task-store/pkg/store"
 	"github.com/wayofthepie/task-store/pkg/task"
 	"github.com/wayofthepie/task-store/pkg/util"
