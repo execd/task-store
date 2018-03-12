@@ -51,12 +51,12 @@ type FailureStatus struct {
 	ChildStatus []FailureStatus `json:"children,omitempty"` // In the case failures have a hierarchy - i.e. pod -> containers
 }
 
-// MarshalBinary marshals a Spec
+// MarshalBinary : marshals a Spec
 func (s *FailureStatus) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-// UnmarshalBinary unmarshals a Spec
+// UnmarshalBinary : unmarshals a Spec
 func (s *FailureStatus) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, s)
 }

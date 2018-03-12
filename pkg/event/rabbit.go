@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/amqp"
-	"log"
 	"github.com/wayofthepie/task-store/pkg/model"
+	"log"
 )
 
 const queueName = "work_queue"
@@ -35,12 +35,12 @@ func NewRabbitServiceImpl(address string) (*RabbitImpl, error) {
 	return r, nil
 }
 
-// GetTaskStatusQueue : get the work queue channel
+// GetTaskStatusQueueChan : get the work queue channel
 func (r *RabbitImpl) GetTaskStatusQueueChan() <-chan wabbit.Delivery {
 	return r.taskStatusQueueChan
 }
 
-// PublishTaskStatus : publish task status on the task status queue
+// PublishWork : publish work on the work queue
 func (r *RabbitImpl) PublishWork(task *model.Spec) error {
 	data, err := task.MarshalBinary()
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *RabbitImpl) declareTaskQueue() {
 		},
 	)
 	if err != nil {
-		panic("Could not setup work_queue")
+		panic("Could not setup task_queue")
 	}
 	taskStatusQueueChan, err := r.channel.Consume(
 		taskStatusQueue.Name(),
@@ -124,6 +124,9 @@ func (r *RabbitImpl) declareTaskQueue() {
 			"no-wait":   false,
 		},
 	)
+	if err != nil {
+		panic("Could not setup task_queue")
+	}
 	r.taskStatusQueueChan = taskStatusQueueChan
 	r.taskStatusQueue = taskStatusQueue
 	r.taskStatusQueueName = name
