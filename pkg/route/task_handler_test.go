@@ -1,18 +1,18 @@
-package route
+package route_test
 
 import (
 	"bytes"
 	"errors"
 	"github.com/alicebob/miniredis"
+	"github.com/execd/task-store/mocks"
+	"github.com/execd/task-store/pkg/route"
+	"github.com/execd/task-store/pkg/store"
+	"github.com/execd/task-store/pkg/task"
+	"github.com/execd/task-store/pkg/util"
 	. "github.com/onsi/ginkgo"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	mock2 "github.com/stretchr/testify/mock"
-	"github.com/wayofthepie/task-store/pkg/route"
-	"github.com/wayofthepie/task-store/mocks"
-	"github.com/wayofthepie/task-store/pkg/store"
-	"github.com/wayofthepie/task-store/pkg/task"
-	"github.com/wayofthepie/task-store/pkg/uuidgen"
 	"net/http"
 	"net/http/httptest"
 )
@@ -32,7 +32,7 @@ var _ = Describe("task handler", func() {
 			}
 			directRedis = s
 			redis := store.NewClient(s.Addr())
-			uuidGen := uuidgen.NewUUIDGenImpl()
+			uuidGen := util.NewUUIDGenImpl()
 			taskStore = task.NewStoreImpl(redis, uuidGen)
 			handler = route.NewTaskHandlerImpl(taskStore)
 		})

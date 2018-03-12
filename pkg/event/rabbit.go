@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/amqp"
-	"github.com/wayofthepie/task-store/pkg/model"
+	"github.com/execd/task-store/pkg/model"
 	"log"
 )
 

@@ -3,13 +3,13 @@ package task_test
 import (
 	"fmt"
 	"github.com/alicebob/miniredis"
+	"github.com/execd/task-store/mocks"
+	"github.com/execd/task-store/pkg/model"
+	"github.com/execd/task-store/pkg/store"
+	"github.com/execd/task-store/pkg/task"
 	. "github.com/onsi/ginkgo"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/wayofthepie/task-store/mocks"
-	"github.com/wayofthepie/task-store/pkg/model"
-	"github.com/wayofthepie/task-store/pkg/store"
-	"github.com/wayofthepie/task-store/pkg/task"
 	"log"
 )
 

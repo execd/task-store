@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/execd/task-store/pkg/route"
+	"github.com/execd/task-store/pkg/store"
+	"github.com/execd/task-store/pkg/task"
+	"github.com/execd/task-store/pkg/util"
 	"github.com/gorilla/mux"
-	"github.com/wayofthepie/task-store/pkg/route"
-	"github.com/wayofthepie/task-store/pkg/store"
-	"github.com/wayofthepie/task-store/pkg/task"
-	"github.com/wayofthepie/task-store/pkg/uuidgen"
 	"log"
 	"net/http"
 )
@@ -17,7 +17,7 @@ func main() {
 
 func initializeRouter() *mux.Router {
 	redis := store.NewClient("localhost:6379")
-	uuidGen := uuidgen.NewUUIDGenImpl()
+	uuidGen := util.NewUUIDGenImpl()
 	taskStore := task.NewStoreImpl(redis, uuidGen)
 
 	taskHandler := route.NewTaskHandlerImpl(taskStore)
