@@ -1,4 +1,4 @@
-package route_test
+package route
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	mock2 "github.com/stretchr/testify/mock"
-	"github.com/wayofthepie/task-store/cmd/route"
+	"github.com/wayofthepie/task-store/pkg/route"
 	"github.com/wayofthepie/task-store/mocks"
 	"github.com/wayofthepie/task-store/pkg/store"
 	"github.com/wayofthepie/task-store/pkg/task"
