@@ -12,7 +12,7 @@ import (
 	"github.com/wayofthepie/task-store/mocks"
 	"github.com/wayofthepie/task-store/pkg/store"
 	"github.com/wayofthepie/task-store/pkg/task"
-	"github.com/wayofthepie/task-store/pkg/util"
+	"github.com/wayofthepie/task-store/pkg/uuidgen"
 	"net/http"
 	"net/http/httptest"
 )
@@ -32,7 +32,7 @@ var _ = Describe("task handler", func() {
 			}
 			directRedis = s
 			redis := store.NewClient(s.Addr())
-			uuidGen := util.NewUUIDGenImpl()
+			uuidGen := uuidgen.NewUUIDGenImpl()
 			taskStore = task.NewStoreImpl(redis, uuidGen)
 			handler = route.NewTaskHandlerImpl(taskStore)
 		})
