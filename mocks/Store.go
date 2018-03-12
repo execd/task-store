@@ -1,7 +1,7 @@
 package mocks
 
 import mock "github.com/stretchr/testify/mock"
-import model "github.com/wayofthepie/task-store/pkg/model"
+import model "github.com/execd/task-store/pkg/model"
 
 import uuid "github.com/satori/go.uuid"
 

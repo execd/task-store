@@ -3,7 +3,8 @@ package event
 import (
 	"fmt"
 	"github.com/NeowayLabs/wabbit"
-	"github.com/wayofthepie/task-executor/pkg/model/task"
+
+	"github.com/execd/task-store/pkg/model"
 	"time"
 )
 
@@ -39,7 +40,7 @@ func (s *ListenerImpl) ListenForTaskStatus() error {
 
 func (s *ListenerImpl) handleMsg(msg wabbit.Delivery) {
 	fmt.Println("received msg")
-	taskInfo := new(task.Info)
+	taskInfo := new(model.Info)
 	err := taskInfo.UnmarshalBinary(msg.Body())
 	if err == nil {
 		fmt.Println(string(msg.Body()))

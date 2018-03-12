@@ -1,8 +1,8 @@
 package route
 
 import (
-	"github.com/wayofthepie/task-store/pkg/model"
-	"github.com/wayofthepie/task-store/pkg/task"
+	"github.com/execd/task-store/pkg/model"
+	"github.com/execd/task-store/pkg/task"
 	"io/ioutil"
 	"net/http"
 )

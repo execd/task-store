@@ -2,10 +2,10 @@ package task
 
 import (
 	"fmt"
+	"github.com/execd/task-store/pkg/model"
+	"github.com/execd/task-store/pkg/util"
 	"github.com/go-redis/redis"
 	"github.com/satori/go.uuid"
-	"github.com/wayofthepie/task-store/pkg/model"
-	"github.com/wayofthepie/task-store/pkg/uuidgen"
 )
 
 const taskQueueName = "taskQ"
@@ -23,14 +23,14 @@ type Store interface {
 }
 
 // NewStoreImpl : build a StoreImpl
-func NewStoreImpl(redis *redis.Client, uuidGen uuidgen.UUIDGen) *StoreImpl {
+func NewStoreImpl(redis *redis.Client, uuidGen util.UUIDGen) *StoreImpl {
 	return &StoreImpl{redis: redis, uuidGen: uuidGen}
 }
 
 // StoreImpl : redis implementation of a Store.
 type StoreImpl struct {
 	redis   *redis.Client
-	uuidGen uuidgen.UUIDGen
+	uuidGen util.UUIDGen
 }
 
 // StoreTask : store the given task
