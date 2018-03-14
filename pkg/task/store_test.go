@@ -16,7 +16,7 @@ import (
 var context = GinkgoT()
 
 var _ = Describe("store", func() {
-	var taskManager *task.StoreImpl
+	var taskStore *task.StoreImpl
 	var directRedis *miniredis.Miniredis
 	var givenTaskSpec model.Spec
 	var uuidGenMock mocks.UUIDGen
@@ -29,7 +29,7 @@ var _ = Describe("store", func() {
 
 		redis := store.NewClient(s.Addr())
 		uuidGenMock = mocks.UUIDGen{}
-		taskManager = task.NewStoreImpl(redis, &uuidGenMock)
+		taskStore = task.NewStoreImpl(redis, &uuidGenMock)
 		directRedis = s
 		givenTaskSpec = model.Spec{
 			Name:     "test",
@@ -54,7 +54,7 @@ var _ = Describe("store", func() {
 			givenId := uuid.Must(uuid.NewV4())
 
 			// Act
-			id, err := taskManager.Schedule(&givenId)
+			id, err := taskStore.Schedule(&givenId)
 			failOnError(err)
 
 			// Assert
@@ -68,7 +68,7 @@ var _ = Describe("store", func() {
 			givenId := uuid.Must(uuid.NewV4())
 
 			// Act
-			_, err := taskManager.Schedule(&givenId)
+			_, err := taskStore.Schedule(&givenId)
 
 			// Assert
 			assert.NotNil(context, err)
@@ -84,11 +84,11 @@ var _ = Describe("store", func() {
 		It("should return the task", func() {
 			// Arrange
 			givenId := uuid.Must(uuid.NewV4())
-			_, err := taskManager.Schedule(&givenId)
+			_, err := taskStore.Schedule(&givenId)
 			failOnError(err)
 
 			// Act
-			id, err := taskManager.PopNextTask()
+			id, err := taskStore.PopNextTask()
 
 			// Assert
 			assert.Nil(context, err)
@@ -100,7 +100,7 @@ var _ = Describe("store", func() {
 			directRedis.Close()
 
 			// Act
-			_, err := taskManager.PopNextTask()
+			_, err := taskStore.PopNextTask()
 
 			// Assert
 			assert.NotNil(context, err)
@@ -121,7 +121,7 @@ var _ = Describe("store", func() {
 
 			// Act
 
-			err := taskManager.MoveTaskToExecutingSet(&givenId)
+			err := taskStore.MoveTaskToExecutingSet(&givenId)
 
 			// Assert
 			assert.NotNil(context, err)
@@ -135,7 +135,7 @@ var _ = Describe("store", func() {
 			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
 
 			// Act
-			id, err := taskManager.StoreTask(givenTaskSpec)
+			id, err := taskStore.StoreTask(givenTaskSpec)
 
 			// Assert
 			assert.Nil(context, err)
@@ -148,11 +148,11 @@ var _ = Describe("store", func() {
 			givenID := uuid.Must(uuid.NewV4())
 			uuidGenMock.On("GenV4").Return(givenID, nil)
 
-			_, err := taskManager.StoreTask(givenTaskSpec)
+			_, err := taskStore.StoreTask(givenTaskSpec)
 			assert.Nil(context, err)
 
 			// Act
-			_, err = taskManager.StoreTask(givenTaskSpec)
+			_, err = taskStore.StoreTask(givenTaskSpec)
 
 			// Assert
 			assert.NotNil(context, err)
@@ -165,7 +165,7 @@ var _ = Describe("store", func() {
 			directRedis.Close()
 
 			// Act
-			_, err := taskManager.StoreTask(givenTaskSpec)
+			_, err := taskStore.StoreTask(givenTaskSpec)
 
 			// Assert
 			assert.NotNil(context, err)
@@ -181,11 +181,11 @@ var _ = Describe("store", func() {
 
 		It("should return the task related to the given id", func() {
 			// Arrange
-			id, err := taskManager.StoreTask(givenTaskSpec)
+			id, err := taskStore.StoreTask(givenTaskSpec)
 			failOnError(err)
 
 			// Act
-			task, err := taskManager.GetTask(id)
+			task, err := taskStore.GetTask(id)
 
 			// Assert
 			assert.Nil(context, err)
@@ -200,7 +200,7 @@ var _ = Describe("store", func() {
 			givenID := uuid.Must(uuid.NewV4())
 
 			// Act
-			_, err := taskManager.GetTask(&givenID)
+			_, err := taskStore.GetTask(&givenID)
 
 			// Assert
 			assert.NotNil(context, err)
@@ -210,19 +210,39 @@ var _ = Describe("store", func() {
 		It("should return an error if retrieved task fails to be re-constructed", func() {
 			// Arrange
 			badData := "test"
-			id, err := taskManager.StoreTask(givenTaskSpec)
+			id, err := taskStore.StoreTask(givenTaskSpec)
 			failOnError(err)
 			taskID := directRedis.Keys()[0]
 			directRedis.Set(taskID, badData)
 
 			// Act
-			_, err = taskManager.GetTask(id)
+			_, err = taskStore.GetTask(id)
 
 			// Assert
 			assert.NotNil(context, err)
 			assert.Equal(context,
 				fmt.Sprintf("failed to build task with id %s from retrieved data %s", id.String(), badData),
 				err.Error())
+		})
+	})
+
+	Describe("publishing a task created event", func() {
+
+		BeforeEach(func() {
+			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
+		})
+
+		It("it should return an error if publishing fails", func() {
+			// Arrange
+			id := uuid.Must(uuid.NewV4())
+			directRedis.Close()
+
+			// Act
+			err := taskStore.PublishTaskCreatedEvent(&id)
+
+			// Assert
+			assert.NotNil(context, err)
+			assert.Contains(context, err.Error(), "failed to publish task created event")
 		})
 	})
 })

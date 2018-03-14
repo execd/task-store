@@ -9,7 +9,7 @@ import (
 // EventManager : interface for an event listener
 type EventManager interface {
 	PublishWork(task *model.Spec) error
-	ListenForProgress(quit <-chan int) <-chan model.Info
+	ListenForProgress(quit <-chan int) (<-chan model.Info, <-chan error)
 }
 
 // EventManagerImpl : implementation of an event listener
@@ -17,8 +17,8 @@ type EventManagerImpl struct {
 	rabbit event.Rabbit
 }
 
-// NewEventListenerImpl : build a ListenerImpl
-func NewEventListenerImpl(rabbit event.Rabbit) (*EventManagerImpl, error) {
+// NewEventManagerImpl : build a ListenerImpl
+func NewEventManagerImpl(rabbit event.Rabbit) (*EventManagerImpl, error) {
 	return &EventManagerImpl{rabbit: rabbit}, nil
 }
 
@@ -40,8 +40,7 @@ func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Info
 				info := new(model.Info)
 				err := info.UnmarshalBinary(msg.Body())
 				if err != nil {
-					errors <-
-						fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
+					errors <- fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
 				} else {
 					status <- *info
 				}

@@ -1,6 +1,7 @@
 package route
 
 import (
+	"fmt"
 	"github.com/execd/task-store/pkg/model"
 	"github.com/execd/task-store/pkg/task"
 	"io/ioutil"
@@ -42,6 +43,11 @@ func (h *TaskHandlerImpl) CreateTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
+	}
+
+	err = h.taskStore.PublishTaskCreatedEvent(id)
+	if err != nil {
+		fmt.Printf("failed to publish task created event for %s: %s\n", id.String(), err.Error())
 	}
 
 	_, err = h.taskStore.Schedule(id)
