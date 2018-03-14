@@ -63,7 +63,7 @@ func (r *RabbitImpl) initialize(address string) {
 
 	conn, err := amqp.Dial(address)
 	if err != nil {
-		panic("cannot connect")
+		panic(err.Error())
 	}
 	conn.NotifyClose(c)
 
