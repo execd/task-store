@@ -106,7 +106,7 @@ var _ = Describe("event", func() {
 
 func buildMsgChan(data []byte) <-chan wabbit.Delivery {
 	msgs := make(chan wabbit.Delivery, 1)
-	msg := server.NewDelivery(nil, data, 0, wabbit.Option{})
+	msg := server.NewDelivery(nil, data, 0, "", wabbit.Option{})
 	msgs <- msg
 	return msgs
 }
