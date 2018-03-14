@@ -28,8 +28,9 @@ func (e *EventManagerImpl) PublishWork(task *model.Spec) error {
 }
 
 // ListenForProgress : listen for task progress
-func (e *EventManagerImpl) ListenForProgress(quit <-chan int) <-chan model.Info {
+func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Info, <-chan error) {
 	status := make(chan model.Info)
+	errors := make(chan error)
 	incoming := e.rabbit.GetTaskStatusQueueChan()
 	go func() {
 		defer close(status)
@@ -37,13 +38,18 @@ func (e *EventManagerImpl) ListenForProgress(quit <-chan int) <-chan model.Info 
 			select {
 			case msg := <-incoming:
 				info := new(model.Info)
-				info.UnmarshalBinary(msg.Body())
-				status <- *info
+				err := info.UnmarshalBinary(msg.Body())
+				if err != nil {
+					errors <-
+						fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
+				} else {
+					status <- *info
+				}
 			case <-quit:
 				fmt.Println("Stopping task listener.")
 				return
 			}
 		}
 	}()
-	return status
+	return status, errors
 }
