@@ -11,6 +11,7 @@ import (
 const taskQueueName = "taskQ"
 const executingQueueName = "executing"
 const taskPrefix = "task"
+const taskCreatedChannel = "taskCreated"
 
 // Store : a Store allows pushing popping and reading
 // of task information from a queue
@@ -20,6 +21,8 @@ type Store interface {
 	Schedule(id *uuid.UUID) (*uuid.UUID, error)
 	PopNextTask() (*uuid.UUID, error)
 	MoveTaskToExecutingSet(id *uuid.UUID) error
+	PublishTaskCreatedEvent(id *uuid.UUID) error
+	ListenForTaskCreatedEvents() <-chan uuid.UUID
 }
 
 // NewStoreImpl : build a StoreImpl
@@ -95,6 +98,36 @@ func (s *StoreImpl) MoveTaskToExecutingSet(id *uuid.UUID) error {
 		return fmt.Errorf("failed to add task to executing set : %s", err.Error())
 	}
 	return nil
+}
+
+// PublishTaskCreatedEvent : publish a task created event to the
+// task created redis channel
+func (s *StoreImpl) PublishTaskCreatedEvent(id *uuid.UUID) error {
+	_, err := s.redis.Publish(taskCreatedChannel, id.String()).Result()
+	if err != nil {
+		return fmt.Errorf("failed to publish task created event : %s", err.Error())
+	}
+	return nil
+}
+
+// ListenForTaskCreatedEvents : get a channel where task
+// created events will be pushed
+// TODO : How to test this?
+func (s *StoreImpl) ListenForTaskCreatedEvents() <-chan uuid.UUID {
+	ids := make(chan uuid.UUID)
+	sub := s.redis.Subscribe(taskCreatedChannel)
+	go func() {
+		for msg := range sub.Channel() {
+			fmt.Printf("Got event for %s", msg.Payload)
+			id, err := uuid.FromString(msg.Payload)
+			if err != nil {
+				fmt.Printf("failed to build id from %s\n", msg.Payload)
+			} else {
+				ids <- id
+			}
+		}
+	}()
+	return ids
 }
 
 func buildTaskKey(id *uuid.UUID) string {

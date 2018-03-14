@@ -102,6 +102,7 @@ var _ = Describe("task handler", func() {
 			mockTaskStore := &mocks.Store{}
 			mockTaskStore.On("StoreTask", mock2.AnythingOfType("model.Spec")).Return(&givenID, nil)
 			mockTaskStore.On("Schedule", &givenID).Return(nil, errors.New("error"))
+			mockTaskStore.On("PublishTaskCreatedEvent", &givenID).Return(nil)
 
 			handler = route.NewTaskHandlerImpl(mockTaskStore)
 			taskString := `{"name": "test", "image": "alpine", "init": "init.sh"}`
