@@ -19,7 +19,7 @@ var _ = Describe("event", func() {
 
 		BeforeEach(func() {
 			rabbitMock = &mocks.Rabbit{}
-			eventListener, _ = task.NewEventListenerImpl(rabbitMock)
+			eventListener, _ = task.NewEventManagerImpl(rabbitMock)
 		})
 
 		It("should quit when quit channel has item", func() {

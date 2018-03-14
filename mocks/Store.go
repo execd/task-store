@@ -33,6 +33,22 @@ func (_m *Store) GetTask(id *uuid.UUID) (*model.Spec, error) {
 	return r0, r1
 }
 
+// ListenForTaskCreatedEvents provides a mock function with given fields:
+func (_m *Store) ListenForTaskCreatedEvents() <-chan uuid.UUID {
+	ret := _m.Called()
+
+	var r0 <-chan uuid.UUID
+	if rf, ok := ret.Get(0).(func() <-chan uuid.UUID); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(<-chan uuid.UUID)
+		}
+	}
+
+	return r0
+}
+
 // MoveTaskToExecutingSet provides a mock function with given fields: id
 func (_m *Store) MoveTaskToExecutingSet(id *uuid.UUID) error {
 	ret := _m.Called(id)
@@ -68,6 +84,20 @@ func (_m *Store) PopNextTask() (*uuid.UUID, error) {
 	}
 
 	return r0, r1
+}
+
+// PublishTaskCreatedEvent provides a mock function with given fields: id
+func (_m *Store) PublishTaskCreatedEvent(id *uuid.UUID) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*uuid.UUID) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Schedule provides a mock function with given fields: id
