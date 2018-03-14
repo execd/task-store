@@ -30,7 +30,7 @@ var _ = Describe("event", func() {
 			timeout := time.After(time.Millisecond)
 
 			// Act
-			status := eventListener.ListenForProgress(quit)
+			status, _ := eventListener.ListenForProgress(quit)
 
 			quit <- 1
 
@@ -62,7 +62,7 @@ var _ = Describe("event", func() {
 			timeout := time.After(time.Millisecond)
 
 			// Act
-			status := eventListener.ListenForProgress(quit)
+			status, _ := eventListener.ListenForProgress(quit)
 
 			// Assert
 			select {
@@ -77,6 +77,28 @@ var _ = Describe("event", func() {
 				break
 			case <-timeout:
 				assert.Fail(context, "Timed out waiting for channel to close, or data to be received")
+			}
+		})
+
+		It("should add error to error channel if msg fails to be decoded", func() {
+			// Arrange
+			quit := make(chan int, 1)
+			defer close(quit)
+
+			rabbitMock.On("GetTaskStatusQueueChan").Return(buildMsgChan([]byte("not right")))
+			timeout := time.After(time.Millisecond)
+
+			// Act
+			status, errors := eventListener.ListenForProgress(quit)
+
+			// Assert
+			select {
+			case <-status:
+				assert.Fail(context, "Should not read a status.")
+			case err := <-errors:
+				assert.Contains(context, err.Error(), "error occurred unmarshalling data")
+			case <-timeout:
+				assert.Fail(context, "Timed out waiting for channel to close, or error to be received")
 			}
 		})
 	})
