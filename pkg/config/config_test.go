@@ -1,8 +1,8 @@
 package config
 
 import (
-	. "github.com/onsi/ginkgo"
 	"github.com/execd/task-store/pkg/model"
+	. "github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/assert"
 )
 

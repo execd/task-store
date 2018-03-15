@@ -41,8 +41,7 @@ func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Info
 				info := new(model.Info)
 				err := info.UnmarshalBinary(msg.Body())
 				if err != nil {
-					errors <-
-						fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
+					errors <- fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
 				} else {
 					status <- *info
 				}
