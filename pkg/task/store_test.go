@@ -246,13 +246,13 @@ var _ = Describe("store", func() {
 		})
 	})
 
-	Describe("remove task from executing set", func () {
+	Describe("remove task from executing set", func() {
 
 		BeforeEach(func() {
 			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
 		})
 
-		It("should return error if remove fails", func () {
+		It("should return error if remove fails", func() {
 			// Arrange
 			directRedis.Close()
 			givenID := uuid.Must(uuid.NewV4())
@@ -266,12 +266,12 @@ var _ = Describe("store", func() {
 		})
 	})
 
-	Describe("is task executing", func () {
+	Describe("is task executing", func() {
 		BeforeEach(func() {
 			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
 		})
 
-		It("should be true if task is executing", func () {
+		It("should be true if task is executing", func() {
 			// Arrange
 			id, err := taskStore.StoreTask(givenTaskSpec)
 			assert.Nil(context, err)
@@ -285,7 +285,7 @@ var _ = Describe("store", func() {
 			assert.True(context, executing)
 		})
 
-		It("should return false if task is not executing", func () {
+		It("should return false if task is not executing", func() {
 			// Arrange
 			givenID := uuid.Must(uuid.NewV4())
 
@@ -297,13 +297,34 @@ var _ = Describe("store", func() {
 			assert.False(context, executing)
 		})
 
-		It("should return error if check for executing fails", func () {
+		It("should return error if check for executing fails", func() {
 			// Arrange
 			directRedis.Close()
 			givenID := uuid.Must(uuid.NewV4())
 
 			// Act
 			_, err := taskStore.IsTaskExecuting(&givenID)
+
+			// Assert
+			assert.NotNil(context, err)
+		})
+	})
+
+	Describe("update task info", func() {
+		BeforeEach(func() {
+			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
+		})
+
+		It("should return error if updating info fails", func () {
+			// Arrange
+			directRedis.Close()
+			id := uuid.Must(uuid.NewV4())
+			info := &model.Info{
+				ID: &id,
+			}
+
+			// Act
+			err := taskStore.UpdateTaskInfo(info)
 
 			// Assert
 			assert.NotNil(context, err)

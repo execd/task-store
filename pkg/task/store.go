@@ -12,6 +12,7 @@ const taskQueueName = "taskQ"
 const executingQueueName = "executing"
 const taskPrefix = "task"
 const taskCreatedChannel = "taskCreated"
+const infoPostFix = "info"
 
 // Store : a Store allows pushing popping and reading
 // of task information from a queue
@@ -25,6 +26,7 @@ type Store interface {
 	IsTaskExecuting(id *uuid.UUID) (bool, error)
 	PublishTaskCreatedEvent(id *uuid.UUID) error
 	ListenForTaskCreatedEvents() <-chan uuid.UUID
+	UpdateTaskInfo(info *model.Info) error
 }
 
 // NewStoreImpl : build a StoreImpl
@@ -135,7 +137,6 @@ func (s *StoreImpl) ListenForTaskCreatedEvents() <-chan uuid.UUID {
 	sub := s.redis.Subscribe(taskCreatedChannel)
 	go func() {
 		for msg := range sub.Channel() {
-			fmt.Printf("Got event for %s", msg.Payload)
 			id, err := uuid.FromString(msg.Payload)
 			if err != nil {
 				fmt.Printf("failed to build id from %s\n", msg.Payload)
@@ -147,6 +148,17 @@ func (s *StoreImpl) ListenForTaskCreatedEvents() <-chan uuid.UUID {
 	return ids
 }
 
+// UpdateTaskInfo : update task information
+func (s *StoreImpl) UpdateTaskInfo(info *model.Info) error {
+	bytes, _ := info.MarshalBinary()
+	_, err := s.redis.SAdd(buildTaskInfoKey(info), string(bytes[:])).Result()
+	return err
+}
+
 func buildTaskKey(id *uuid.UUID) string {
 	return fmt.Sprintf("%s:%s", taskPrefix, id.String())
+}
+
+func buildTaskInfoKey(info *model.Info) string {
+	return fmt.Sprintf("%s:%s:%s", taskPrefix, info.ID.String(), infoPostFix)
 }

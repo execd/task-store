@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"github.com/alicebob/miniredis"
-	"github.com/execd/task-store/mocks"
 	"github.com/execd/task-store/pkg/route"
 	"github.com/execd/task-store/pkg/store"
 	"github.com/execd/task-store/pkg/task"
@@ -12,7 +11,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
-	mock2 "github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 )
@@ -94,27 +92,6 @@ var _ = Describe("task handler", func() {
 			id, err := uuid.FromString(writer.Body.String())
 			assert.Nil(context, err)
 			assert.NotNil(context, id)
-		})
-
-		It("should return error if adding to task queue fails", func() {
-			// Arrange
-			givenID := uuid.Must(uuid.NewV4())
-			mockTaskStore := &mocks.Store{}
-			mockTaskStore.On("StoreTask", mock2.AnythingOfType("model.Spec")).Return(&givenID, nil)
-			mockTaskStore.On("PushTask", &givenID).Return(nil, errors.New("error"))
-			mockTaskStore.On("PublishTaskCreatedEvent", &givenID).Return(nil)
-
-			handler = route.NewTaskHandlerImpl(mockTaskStore)
-			taskString := `{"name": "test", "image": "alpine", "init": "init.sh"}`
-			req, _ := http.NewRequest("POST", "/handle", bytes.NewReader([]byte(taskString)))
-			writer := httptest.NewRecorder()
-
-			// Act
-			handler.CreateTask(writer, req)
-
-			// Assert
-			assert.Equal(context, 500, writer.Code)
-			assert.Equal(context, "error\n", writer.Body.String())
 		})
 	})
 })
