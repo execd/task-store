@@ -315,7 +315,7 @@ var _ = Describe("store", func() {
 			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
 		})
 
-		It("should return error if updating info fails", func () {
+		It("should return error if updating info fails", func() {
 			// Arrange
 			directRedis.Close()
 			id := uuid.Must(uuid.NewV4())
@@ -328,6 +328,26 @@ var _ = Describe("store", func() {
 
 			// Assert
 			assert.NotNil(context, err)
+		})
+	})
+
+	Describe("get task queue size", func() {
+		BeforeEach(func() {
+			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
+		})
+
+		It("should return the queue size", func() {
+			// Arrange
+			givenID := uuid.Must(uuid.NewV4())
+			_, err := taskStore.PushTask(&givenID)
+			assert.Nil(context, err)
+
+			// Act
+			size, err := taskStore.TaskQueueSize()
+
+			// Assert
+			assert.Nil(context, err)
+			assert.Equal(context, int64(1), size)
 		})
 	})
 })

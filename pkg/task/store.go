@@ -21,6 +21,7 @@ type Store interface {
 	GetTask(id *uuid.UUID) (*model.Spec, error)
 	PushTask(id *uuid.UUID) (*uuid.UUID, error)
 	PopTask() (*uuid.UUID, error)
+	TaskQueueSize() (int64, error)
 	AddTaskToExecutingSet(id *uuid.UUID) error
 	RemoveTaskFromExecutingSet(id *uuid.UUID) error
 	IsTaskExecuting(id *uuid.UUID) (bool, error)
@@ -93,6 +94,10 @@ func (s *StoreImpl) PopTask() (*uuid.UUID, error) {
 	_ = id.UnmarshalText([]byte(stringID))
 
 	return id, nil
+}
+
+func (s *StoreImpl) TaskQueueSize() (int64, error) {
+	return s.redis.LLen(taskQueueName).Result()
 }
 
 // AddTaskToExecutingSet : move a task to the executing set
