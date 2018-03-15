@@ -18,9 +18,11 @@ const taskCreatedChannel = "taskCreated"
 type Store interface {
 	StoreTask(task model.Spec) (*uuid.UUID, error)
 	GetTask(id *uuid.UUID) (*model.Spec, error)
-	Schedule(id *uuid.UUID) (*uuid.UUID, error)
-	PopNextTask() (*uuid.UUID, error)
-	MoveTaskToExecutingSet(id *uuid.UUID) error
+	PushTask(id *uuid.UUID) (*uuid.UUID, error)
+	PopTask() (*uuid.UUID, error)
+	AddTaskToExecutingSet(id *uuid.UUID) error
+	RemoveTaskFromExecutingSet(id *uuid.UUID) error
+	IsTaskExecuting(id *uuid.UUID) (bool, error)
 	PublishTaskCreatedEvent(id *uuid.UUID) error
 	ListenForTaskCreatedEvents() <-chan uuid.UUID
 }
@@ -67,8 +69,8 @@ func (s *StoreImpl) GetTask(id *uuid.UUID) (*model.Spec, error) {
 	return taskSpec, nil
 }
 
-// Schedule : push the given TaskSpec on the task queue
-func (s *StoreImpl) Schedule(id *uuid.UUID) (*uuid.UUID, error) {
+// PushTask : push the given TaskSpec on the task queue
+func (s *StoreImpl) PushTask(id *uuid.UUID) (*uuid.UUID, error) {
 	_, err := s.redis.LPush(taskQueueName, id.String()).Result()
 	if err != nil {
 		return nil, err
@@ -76,8 +78,8 @@ func (s *StoreImpl) Schedule(id *uuid.UUID) (*uuid.UUID, error) {
 	return id, nil
 }
 
-// PopNextTask : get the next task
-func (s *StoreImpl) PopNextTask() (*uuid.UUID, error) {
+// PopTask : get the next task
+func (s *StoreImpl) PopTask() (*uuid.UUID, error) {
 	results, err := s.redis.BRPop(0, taskQueueName).Result()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve next task to execute : %s", err.Error())
@@ -91,13 +93,28 @@ func (s *StoreImpl) PopNextTask() (*uuid.UUID, error) {
 	return id, nil
 }
 
-// MoveTaskToExecutingSet : move a task to the executing set
-func (s *StoreImpl) MoveTaskToExecutingSet(id *uuid.UUID) error {
+// AddTaskToExecutingSet : move a task to the executing set
+func (s *StoreImpl) AddTaskToExecutingSet(id *uuid.UUID) error {
 	_, err := s.redis.SAdd(executingQueueName, id.String()).Result()
 	if err != nil {
 		return fmt.Errorf("failed to add task to executing set : %s", err.Error())
 	}
 	return nil
+}
+
+// RemoveTaskFromExecutingSet : remove task from the executing set
+func (s *StoreImpl) RemoveTaskFromExecutingSet(id *uuid.UUID) error {
+	i, err := s.redis.SRem(executingQueueName, id.String()).Result()
+	println(i)
+	if err != nil {
+		return fmt.Errorf("failed to remove task %s : %s", id.String(), err.Error())
+	}
+	return nil
+}
+
+// IsTaskExecuting : true if a task is executing, false otherwise
+func (s *StoreImpl) IsTaskExecuting(id *uuid.UUID) (bool, error) {
+	return s.redis.SIsMember(executingQueueName, id.String()).Result()
 }
 
 // PublishTaskCreatedEvent : publish a task created event to the

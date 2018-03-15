@@ -54,7 +54,7 @@ var _ = Describe("store", func() {
 			givenId := uuid.Must(uuid.NewV4())
 
 			// Act
-			id, err := taskStore.Schedule(&givenId)
+			id, err := taskStore.PushTask(&givenId)
 			failOnError(err)
 
 			// Assert
@@ -68,7 +68,7 @@ var _ = Describe("store", func() {
 			givenId := uuid.Must(uuid.NewV4())
 
 			// Act
-			_, err := taskStore.Schedule(&givenId)
+			_, err := taskStore.PushTask(&givenId)
 
 			// Assert
 			assert.NotNil(context, err)
@@ -84,11 +84,11 @@ var _ = Describe("store", func() {
 		It("should return the task", func() {
 			// Arrange
 			givenId := uuid.Must(uuid.NewV4())
-			_, err := taskStore.Schedule(&givenId)
+			_, err := taskStore.PushTask(&givenId)
 			failOnError(err)
 
 			// Act
-			id, err := taskStore.PopNextTask()
+			id, err := taskStore.PopTask()
 
 			// Assert
 			assert.Nil(context, err)
@@ -100,7 +100,7 @@ var _ = Describe("store", func() {
 			directRedis.Close()
 
 			// Act
-			_, err := taskStore.PopNextTask()
+			_, err := taskStore.PopTask()
 
 			// Assert
 			assert.NotNil(context, err)
@@ -121,7 +121,7 @@ var _ = Describe("store", func() {
 
 			// Act
 
-			err := taskStore.MoveTaskToExecutingSet(&givenId)
+			err := taskStore.AddTaskToExecutingSet(&givenId)
 
 			// Assert
 			assert.NotNil(context, err)
@@ -243,6 +243,70 @@ var _ = Describe("store", func() {
 			// Assert
 			assert.NotNil(context, err)
 			assert.Contains(context, err.Error(), "failed to publish task created event")
+		})
+	})
+
+	Describe("remove task from executing set", func () {
+
+		BeforeEach(func() {
+			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
+		})
+
+		It("should return error if remove fails", func () {
+			// Arrange
+			directRedis.Close()
+			givenID := uuid.Must(uuid.NewV4())
+
+			// Act
+			err := taskStore.RemoveTaskFromExecutingSet(&givenID)
+
+			// Assert
+			assert.NotNil(context, err)
+			assert.Contains(context, err.Error(), "failed to remove task")
+		})
+	})
+
+	Describe("is task executing", func () {
+		BeforeEach(func() {
+			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
+		})
+
+		It("should be true if task is executing", func () {
+			// Arrange
+			id, err := taskStore.StoreTask(givenTaskSpec)
+			assert.Nil(context, err)
+			taskStore.AddTaskToExecutingSet(id)
+
+			// Act
+			executing, err := taskStore.IsTaskExecuting(id)
+
+			// Assert
+			assert.Nil(context, err)
+			assert.True(context, executing)
+		})
+
+		It("should return false if task is not executing", func () {
+			// Arrange
+			givenID := uuid.Must(uuid.NewV4())
+
+			// Act
+			executing, err := taskStore.IsTaskExecuting(&givenID)
+
+			// Assert
+			assert.Nil(context, err)
+			assert.False(context, executing)
+		})
+
+		It("should return error if check for executing fails", func () {
+			// Arrange
+			directRedis.Close()
+			givenID := uuid.Must(uuid.NewV4())
+
+			// Act
+			_, err := taskStore.IsTaskExecuting(&givenID)
+
+			// Assert
+			assert.NotNil(context, err)
 		})
 	})
 })
