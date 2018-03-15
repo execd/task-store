@@ -19,12 +19,16 @@ const infoPostFix = "info"
 type Store interface {
 	StoreTask(task model.Spec) (*uuid.UUID, error)
 	GetTask(id *uuid.UUID) (*model.Spec, error)
+
 	PushTask(id *uuid.UUID) (*uuid.UUID, error)
 	PopTask() (*uuid.UUID, error)
 	TaskQueueSize() (int64, error)
+
 	AddTaskToExecutingSet(id *uuid.UUID) error
 	RemoveTaskFromExecutingSet(id *uuid.UUID) error
+	ExecutingSetSize() (int64, error)
 	IsTaskExecuting(id *uuid.UUID) (bool, error)
+
 	PublishTaskCreatedEvent(id *uuid.UUID) error
 	ListenForTaskCreatedEvents() <-chan uuid.UUID
 	UpdateTaskInfo(info *model.Info) error
@@ -96,6 +100,7 @@ func (s *StoreImpl) PopTask() (*uuid.UUID, error) {
 	return id, nil
 }
 
+// TaskQueueSize : get the size of the task queue
 func (s *StoreImpl) TaskQueueSize() (int64, error) {
 	return s.redis.LLen(taskQueueName).Result()
 }
@@ -117,6 +122,11 @@ func (s *StoreImpl) RemoveTaskFromExecutingSet(id *uuid.UUID) error {
 		return fmt.Errorf("failed to remove task %s : %s", id.String(), err.Error())
 	}
 	return nil
+}
+
+// ExecutingSetSize : get the size of the executing set
+func (s *StoreImpl) ExecutingSetSize() (int64, error) {
+	return s.redis.SCard(executingQueueName).Result()
 }
 
 // IsTaskExecuting : true if a task is executing, false otherwise
