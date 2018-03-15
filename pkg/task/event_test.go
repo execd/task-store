@@ -27,7 +27,7 @@ var _ = Describe("event", func() {
 			quit := make(chan int)
 			defer close(quit)
 			rabbitMock.On("GetTaskStatusQueueChan").Return(nil)
-			timeout := time.After(time.Millisecond)
+			timeout := time.After(time.Millisecond * 5)
 
 			// Act
 			status, _ := eventListener.ListenForProgress(quit)
@@ -59,7 +59,7 @@ var _ = Describe("event", func() {
 			assert.Nil(context, err)
 
 			rabbitMock.On("GetTaskStatusQueueChan").Return(buildMsgChan(data))
-			timeout := time.After(time.Millisecond)
+			timeout := time.After(time.Millisecond * 5)
 
 			// Act
 			status, _ := eventListener.ListenForProgress(quit)
@@ -86,7 +86,7 @@ var _ = Describe("event", func() {
 			defer close(quit)
 
 			rabbitMock.On("GetTaskStatusQueueChan").Return(buildMsgChan([]byte("not right")))
-			timeout := time.After(time.Millisecond)
+			timeout := time.After(time.Millisecond * 5)
 
 			// Act
 			status, errors := eventListener.ListenForProgress(quit)
