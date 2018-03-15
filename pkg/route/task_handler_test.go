@@ -101,7 +101,7 @@ var _ = Describe("task handler", func() {
 			givenID := uuid.Must(uuid.NewV4())
 			mockTaskStore := &mocks.Store{}
 			mockTaskStore.On("StoreTask", mock2.AnythingOfType("model.Spec")).Return(&givenID, nil)
-			mockTaskStore.On("Schedule", &givenID).Return(nil, errors.New("error"))
+			mockTaskStore.On("PushTask", &givenID).Return(nil, errors.New("error"))
 			mockTaskStore.On("PublishTaskCreatedEvent", &givenID).Return(nil)
 
 			handler = route.NewTaskHandlerImpl(mockTaskStore)

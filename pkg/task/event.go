@@ -24,7 +24,7 @@ func NewEventManagerImpl(rabbit event.Rabbit) (*EventManagerImpl, error) {
 
 // PublishWork : publish a task
 func (e *EventManagerImpl) PublishWork(task *model.Spec) error {
-	return nil
+	return e.rabbit.PublishWork(task)
 }
 
 // ListenForProgress : listen for task progress
