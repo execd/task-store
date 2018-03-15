@@ -349,6 +349,20 @@ var _ = Describe("store", func() {
 			assert.Nil(context, err)
 			assert.Equal(context, int64(1), size)
 		})
+
+		It("should return error if getting queue size fails", func() {
+			// Arrange
+			givenID := uuid.Must(uuid.NewV4())
+			_, err := taskStore.PushTask(&givenID)
+			assert.Nil(context, err)
+			directRedis.Close()
+
+			// Act
+			_, err = taskStore.TaskQueueSize()
+
+			// Assert
+			assert.NotNil(context, err)
+		})
 	})
 })
 
