@@ -352,13 +352,41 @@ var _ = Describe("store", func() {
 
 		It("should return error if getting queue size fails", func() {
 			// Arrange
-			givenID := uuid.Must(uuid.NewV4())
-			_, err := taskStore.PushTask(&givenID)
-			assert.Nil(context, err)
 			directRedis.Close()
 
 			// Act
-			_, err = taskStore.TaskQueueSize()
+			_, err := taskStore.TaskQueueSize()
+
+			// Assert
+			assert.NotNil(context, err)
+		})
+	})
+
+	Describe("get executing set size", func() {
+		BeforeEach(func() {
+			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
+		})
+
+		It("should return the set size", func() {
+			// Arrange
+			givenID := uuid.Must(uuid.NewV4())
+			err := taskStore.AddTaskToExecutingSet(&givenID)
+			assert.Nil(context, err)
+
+			// Act
+			size, err := taskStore.ExecutingSetSize()
+
+			// Assert
+			assert.Nil(context, err)
+			assert.Equal(context, int64(1), size)
+		})
+
+		It("should return error if getting queue size fails", func() {
+			// Arrange
+			directRedis.Close()
+
+			// Act
+			_, err := taskStore.ExecutingSetSize()
 
 			// Assert
 			assert.NotNil(context, err)
