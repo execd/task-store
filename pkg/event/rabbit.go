@@ -1,7 +1,6 @@
 package event
 
 import (
-	"fmt"
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/amqp"
 	"github.com/execd/task-store/pkg/model"
@@ -54,7 +53,6 @@ func (r *RabbitImpl) PublishWork(task *model.Spec) error {
 
 func (r *RabbitImpl) initialize(address string) {
 	c := make(chan wabbit.Error)
-	fmt.Println("Initializing")
 	go func() {
 		err := <-c
 		log.Println("reconnect: ", err.Error())

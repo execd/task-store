@@ -24,6 +24,7 @@ func NewEventManagerImpl(rabbit event.Rabbit) (*EventManagerImpl, error) {
 
 // PublishWork : publish a task
 func (e *EventManagerImpl) PublishWork(task *model.Spec) error {
+	fmt.Printf("Publishing work for task %s\n", task.ID.String())
 	return e.rabbit.PublishWork(task)
 }
 
@@ -40,7 +41,8 @@ func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Info
 				info := new(model.Info)
 				err := info.UnmarshalBinary(msg.Body())
 				if err != nil {
-					errors <- fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
+					errors <-
+						fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
 				} else {
 					status <- *info
 				}

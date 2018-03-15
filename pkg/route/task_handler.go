@@ -50,12 +50,6 @@ func (h *TaskHandlerImpl) CreateTask(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("failed to publish task created event for %s: %s\n", id.String(), err.Error())
 	}
 
-	_, err = h.taskStore.PushTask(id)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
 	w.WriteHeader(201)
 	w.Write([]byte(id.String()))
 }
