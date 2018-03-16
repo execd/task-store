@@ -49,17 +49,17 @@ var _ = Describe("store", func() {
 			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
 		})
 
-		It("should return pushed task id", func() {
+		It("should return queue size after th push", func() {
 			// Arrange
 			givenId := uuid.Must(uuid.NewV4())
 
 			// Act
-			id, err := taskStore.PushTask(&givenId)
+			size, err := taskStore.PushTask(&givenId)
 			failOnError(err)
 
 			// Assert
 			assert.Nil(context, err)
-			assert.Equal(context, givenId, *id)
+			assert.Equal(context, int64(1), size)
 		})
 
 		It("should return error if pushing onto queue fails", func() {

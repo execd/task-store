@@ -20,7 +20,7 @@ type Store interface {
 	StoreTask(task model.Spec) (*uuid.UUID, error)
 	GetTask(id *uuid.UUID) (*model.Spec, error)
 
-	PushTask(id *uuid.UUID) (*uuid.UUID, error)
+	PushTask(id *uuid.UUID) (int64, error)
 	PopTask() (*uuid.UUID, error)
 	TaskQueueSize() (int64, error)
 
@@ -76,13 +76,13 @@ func (s *StoreImpl) GetTask(id *uuid.UUID) (*model.Spec, error) {
 	return taskSpec, nil
 }
 
-// PushTask : push the given TaskSpec on the task queue
-func (s *StoreImpl) PushTask(id *uuid.UUID) (*uuid.UUID, error) {
-	_, err := s.redis.LPush(taskQueueName, id.String()).Result()
+// PushTask : push the given TaskSpec on the task queue, returning the size after the push
+func (s *StoreImpl) PushTask(id *uuid.UUID) (int64, error) {
+	size, err := s.redis.LPush(taskQueueName, id.String()).Result()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return id, nil
+	return size, nil
 }
 
 // PopTask : get the next task
