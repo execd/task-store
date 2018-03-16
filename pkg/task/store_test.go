@@ -190,6 +190,7 @@ var _ = Describe("store", func() {
 
 			// Assert
 			assert.Nil(context, err)
+			assert.Equal(context, id, task.ID)
 			assert.Equal(context, givenTaskSpec.Name, task.Name)
 			assert.Equal(context, givenTaskSpec.Init, task.Init)
 			assert.Equal(context, givenTaskSpec.InitArgs, task.InitArgs)

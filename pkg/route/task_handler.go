@@ -1,9 +1,11 @@
 package route
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/execd/task-store/pkg/model"
 	"github.com/execd/task-store/pkg/task"
+	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
 )
@@ -74,4 +76,29 @@ func (h *TaskHandlerImpl) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(201)
 	w.Write([]byte(id.String()))
+}
+
+// GetTask : retrieve a task denoted by the given id
+func (h *TaskHandlerImpl) GetTask(w http.ResponseWriter, r *http.Request, vars map[string]string) {
+	idStr := vars["id"]
+	id, err := uuid.FromString(idStr)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to build id from %s : %s", idStr, err.Error()), 500)
+		return
+	}
+
+	taskSpec, err := h.taskStore.GetTask(&id)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	data, err := json.Marshal(taskSpec)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Write(data)
 }

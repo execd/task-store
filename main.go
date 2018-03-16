@@ -56,7 +56,13 @@ func initializeStore() task.Store {
 func initializeRouter(taskStore task.Store, config *model.Config) *mux.Router {
 	taskHandler := route.NewTaskHandlerImpl(taskStore, config)
 	router := mux.NewRouter()
+
 	router.HandleFunc("/tasks/", taskHandler.CreateTask).Methods(http.MethodPost)
+	getTaskH := func(w http.ResponseWriter, r *http.Request) {
+		taskHandler.GetTask(w, r, mux.Vars(r))
+	}
+	router.HandleFunc("/tasks/{id}", getTaskH).Methods(http.MethodGet)
+
 	return router
 }
 
