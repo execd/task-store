@@ -46,8 +46,11 @@ func (h *TaskHandlerImpl) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if size >= h.config.Manager.TaskQueueSize {
-		http.Error(w, fmt.Sprintf("Failed to create task, task queue has reached its limit!"), 500)
+	capacity := h.config.Manager.TaskQueueSize
+	if size >= capacity {
+		errStr := fmt.Sprintf("Failed to create task, task queue has reached its limit!")
+		fmt.Println(errStr)
+		http.Error(w, errStr, 500)
 		return
 	}
 
@@ -57,7 +60,14 @@ func (h *TaskHandlerImpl) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.taskStore.PublishTaskCreatedEvent(id)
+	queueSize, err := h.taskStore.PushTask(id)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Printf("Task %s added to task queue - remaining queue capacity is %d\n", id.String(), capacity-queueSize)
+
+	h.taskStore.PublishTaskCreatedEvent(id)
 	if err != nil {
 		fmt.Printf("failed to publish task created event for %s: %s\n", id.String(), err.Error())
 	}

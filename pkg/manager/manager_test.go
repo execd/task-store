@@ -110,9 +110,9 @@ var _ = Describe("manage tasks", func() {
 	})
 })
 
-func buildCreatedTasksCh() <-chan uuid.UUID {
+func buildCreatedTasksCh() <-chan *uuid.UUID {
 	givenID := uuid.Must(uuid.NewV4())
-	createdTasks := make(chan uuid.UUID, 1)
-	createdTasks <- givenID
+	createdTasks := make(chan *uuid.UUID, 1)
+	createdTasks <- &givenID
 	return createdTasks
 }
