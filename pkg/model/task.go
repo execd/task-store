@@ -8,6 +8,7 @@ import (
 // Spec is the specification for a task
 type Spec struct {
 	ID       *uuid.UUID `json:"id"`
+	Metadata map[string]string `json:"metadata"`
 	Name     string     `json:"name"`
 	Image    string     `json:"image"`
 	Init     string     `json:"init"`
