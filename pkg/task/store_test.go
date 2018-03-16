@@ -11,6 +11,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"log"
+	"time"
 )
 
 var context = GinkgoT()
@@ -49,17 +50,17 @@ var _ = Describe("store", func() {
 			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
 		})
 
-		It("should return pushed task id", func() {
+		It("should return queue size after th push", func() {
 			// Arrange
 			givenId := uuid.Must(uuid.NewV4())
 
 			// Act
-			id, err := taskStore.PushTask(&givenId)
+			size, err := taskStore.PushTask(&givenId)
 			failOnError(err)
 
 			// Assert
 			assert.Nil(context, err)
-			assert.Equal(context, givenId, *id)
+			assert.Equal(context, int64(1), size)
 		})
 
 		It("should return error if pushing onto queue fails", func() {
@@ -226,23 +227,29 @@ var _ = Describe("store", func() {
 		})
 	})
 
-	Describe("publishing a task created event", func() {
+	Describe("publishing and listening for a task created event", func() {
 
 		BeforeEach(func() {
 			uuidGenMock.On("GenV4").Return(uuid.Must(uuid.NewV4()), nil)
 		})
 
-		It("it should return an error if publishing fails", func() {
+		It("should receive published task", func() {
 			// Arrange
 			id := uuid.Must(uuid.NewV4())
-			directRedis.Close()
+			timeout := time.After(time.Second)
 
 			// Act
-			err := taskStore.PublishTaskCreatedEvent(&id)
+			go func() {
+				taskStore.PublishTaskCreatedEvent(&id)
+			}()
 
 			// Assert
-			assert.NotNil(context, err)
-			assert.Contains(context, err.Error(), "failed to publish task created event")
+			select {
+			case actualId := <-taskStore.ListenForTaskCreatedEvents():
+				assert.Equal(context, actualId, &id)
+			case <-timeout:
+				assert.Fail(context, "Timed out waiting for channel to close, or error to be received")
+			}
 		})
 	})
 

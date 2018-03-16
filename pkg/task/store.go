@@ -11,7 +11,6 @@ import (
 const taskQueueName = "taskQ"
 const executingQueueName = "executing"
 const taskPrefix = "task"
-const taskCreatedChannel = "taskCreated"
 const infoPostFix = "info"
 
 // Store : a Store allows pushing popping and reading
@@ -20,7 +19,7 @@ type Store interface {
 	StoreTask(task model.Spec) (*uuid.UUID, error)
 	GetTask(id *uuid.UUID) (*model.Spec, error)
 
-	PushTask(id *uuid.UUID) (*uuid.UUID, error)
+	PushTask(id *uuid.UUID) (int64, error)
 	PopTask() (*uuid.UUID, error)
 	TaskQueueSize() (int64, error)
 
@@ -29,20 +28,22 @@ type Store interface {
 	ExecutingSetSize() (int64, error)
 	IsTaskExecuting(id *uuid.UUID) (bool, error)
 
-	PublishTaskCreatedEvent(id *uuid.UUID) error
-	ListenForTaskCreatedEvents() <-chan uuid.UUID
+	PublishTaskCreatedEvent(id *uuid.UUID)
+	ListenForTaskCreatedEvents() <-chan *uuid.UUID
 	UpdateTaskInfo(info *model.Info) error
 }
 
 // NewStoreImpl : build a StoreImpl
 func NewStoreImpl(redis *redis.Client, uuidGen util.UUIDGen) *StoreImpl {
-	return &StoreImpl{redis: redis, uuidGen: uuidGen}
+	createCh := make(chan *uuid.UUID, 100)
+	return &StoreImpl{redis: redis, uuidGen: uuidGen, createCh: createCh}
 }
 
 // StoreImpl : redis implementation of a Store.
 type StoreImpl struct {
-	redis   *redis.Client
-	uuidGen util.UUIDGen
+	redis    *redis.Client
+	uuidGen  util.UUIDGen
+	createCh chan *uuid.UUID
 }
 
 // StoreTask : store the given task
@@ -76,13 +77,13 @@ func (s *StoreImpl) GetTask(id *uuid.UUID) (*model.Spec, error) {
 	return taskSpec, nil
 }
 
-// PushTask : push the given TaskSpec on the task queue
-func (s *StoreImpl) PushTask(id *uuid.UUID) (*uuid.UUID, error) {
-	_, err := s.redis.LPush(taskQueueName, id.String()).Result()
+// PushTask : push the given TaskSpec on the task queue, returning the size after the push
+func (s *StoreImpl) PushTask(id *uuid.UUID) (int64, error) {
+	size, err := s.redis.LPush(taskQueueName, id.String()).Result()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return id, nil
+	return size, nil
 }
 
 // PopTask : get the next task
@@ -116,8 +117,7 @@ func (s *StoreImpl) AddTaskToExecutingSet(id *uuid.UUID) error {
 
 // RemoveTaskFromExecutingSet : remove task from the executing set
 func (s *StoreImpl) RemoveTaskFromExecutingSet(id *uuid.UUID) error {
-	i, err := s.redis.SRem(executingQueueName, id.String()).Result()
-	println(i)
+	_, err := s.redis.SRem(executingQueueName, id.String()).Result()
 	if err != nil {
 		return fmt.Errorf("failed to remove task %s : %s", id.String(), err.Error())
 	}
@@ -136,31 +136,15 @@ func (s *StoreImpl) IsTaskExecuting(id *uuid.UUID) (bool, error) {
 
 // PublishTaskCreatedEvent : publish a task created event to the
 // task created redis channel
-func (s *StoreImpl) PublishTaskCreatedEvent(id *uuid.UUID) error {
-	_, err := s.redis.Publish(taskCreatedChannel, id.String()).Result()
-	if err != nil {
-		return fmt.Errorf("failed to publish task created event : %s", err.Error())
-	}
-	return nil
+func (s *StoreImpl) PublishTaskCreatedEvent(id *uuid.UUID) {
+	s.createCh <- id
 }
 
 // ListenForTaskCreatedEvents : get a channel where task
 // created events will be pushed
 // TODO : How to test this?
-func (s *StoreImpl) ListenForTaskCreatedEvents() <-chan uuid.UUID {
-	ids := make(chan uuid.UUID)
-	sub := s.redis.Subscribe(taskCreatedChannel)
-	go func() {
-		for msg := range sub.Channel() {
-			id, err := uuid.FromString(msg.Payload)
-			if err != nil {
-				fmt.Printf("failed to build id from %s\n", msg.Payload)
-			} else {
-				ids <- id
-			}
-		}
-	}()
-	return ids
+func (s *StoreImpl) ListenForTaskCreatedEvents() <-chan *uuid.UUID {
+	return s.createCh
 }
 
 // UpdateTaskInfo : update task information
