@@ -16,11 +16,12 @@ type TaskHandler interface {
 // TaskHandlerImpl : implementation of a task Handler
 type TaskHandlerImpl struct {
 	taskStore task.Store
+	config    *model.Config
 }
 
 // NewTaskHandlerImpl creates a new HandlerImpl
-func NewTaskHandlerImpl(taskStore task.Store) *TaskHandlerImpl {
-	return &TaskHandlerImpl{taskStore: taskStore}
+func NewTaskHandlerImpl(taskStore task.Store, config *model.Config) *TaskHandlerImpl {
+	return &TaskHandlerImpl{taskStore: taskStore, config: config}
 }
 
 // CreateTask handles task creation requests
@@ -36,6 +37,17 @@ func (h *TaskHandlerImpl) CreateTask(w http.ResponseWriter, r *http.Request) {
 	err = taskSpec.UnmarshalBinary(body)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	size, err := h.taskStore.TaskQueueSize()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	if size >= h.config.Manager.TaskQueueSize {
+		http.Error(w, fmt.Sprintf("Failed to create task, task queue has reached its limit!"), 500)
 		return
 	}
 

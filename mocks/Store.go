@@ -24,6 +24,27 @@ func (_m *Store) AddTaskToExecutingSet(id *uuid.UUID) error {
 	return r0
 }
 
+// ExecutingSetSize provides a mock function with given fields:
+func (_m *Store) ExecutingSetSize() (int64, error) {
+	ret := _m.Called()
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func() int64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetTask provides a mock function with given fields: id
 func (_m *Store) GetTask(id *uuid.UUID) (*model.Spec, error) {
 	ret := _m.Called(id)
@@ -122,16 +143,14 @@ func (_m *Store) PublishTaskCreatedEvent(id *uuid.UUID) error {
 }
 
 // PushTask provides a mock function with given fields: id
-func (_m *Store) PushTask(id *uuid.UUID) (*uuid.UUID, error) {
+func (_m *Store) PushTask(id *uuid.UUID) (int64, error) {
 	ret := _m.Called(id)
 
-	var r0 *uuid.UUID
-	if rf, ok := ret.Get(0).(func(*uuid.UUID) *uuid.UUID); ok {
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*uuid.UUID) int64); ok {
 		r0 = rf(id)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*uuid.UUID)
-		}
+		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
@@ -182,14 +201,14 @@ func (_m *Store) StoreTask(_a0 model.Spec) (*uuid.UUID, error) {
 }
 
 // TaskQueueSize provides a mock function with given fields:
-func (_m *Store) TaskQueueSize() (int, error) {
+func (_m *Store) TaskQueueSize() (int64, error) {
 	ret := _m.Called()
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
+	var r0 int64
+	if rf, ok := ret.Get(0).(func() int64); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(int)
+		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error

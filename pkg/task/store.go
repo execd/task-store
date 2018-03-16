@@ -116,8 +116,7 @@ func (s *StoreImpl) AddTaskToExecutingSet(id *uuid.UUID) error {
 
 // RemoveTaskFromExecutingSet : remove task from the executing set
 func (s *StoreImpl) RemoveTaskFromExecutingSet(id *uuid.UUID) error {
-	i, err := s.redis.SRem(executingQueueName, id.String()).Result()
-	println(i)
+	_, err := s.redis.SRem(executingQueueName, id.String()).Result()
 	if err != nil {
 		return fmt.Errorf("failed to remove task %s : %s", id.String(), err.Error())
 	}

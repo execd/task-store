@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/execd/task-store/pkg/model"
 	"github.com/execd/task-store/pkg/route"
 	"github.com/execd/task-store/pkg/store"
 	"github.com/execd/task-store/pkg/task"
@@ -20,7 +21,7 @@ func initializeRouter() *mux.Router {
 	uuidGen := util.NewUUIDGenImpl()
 	taskStore := task.NewStoreImpl(redis, uuidGen)
 
-	taskHandler := route.NewTaskHandlerImpl(taskStore)
+	taskHandler := route.NewTaskHandlerImpl(taskStore, &model.Config{})
 
 	router := mux.NewRouter()
 	router.HandleFunc("/tasks/", taskHandler.CreateTask).Methods(http.MethodPost)

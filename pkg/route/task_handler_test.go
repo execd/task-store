@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/alicebob/miniredis"
+	"github.com/execd/task-store/pkg/model"
 	"github.com/execd/task-store/pkg/route"
 	"github.com/execd/task-store/pkg/store"
 	"github.com/execd/task-store/pkg/task"
@@ -32,7 +33,13 @@ var _ = Describe("task handler", func() {
 			redis := store.NewClient(s.Addr())
 			uuidGen := util.NewUUIDGenImpl()
 			taskStore = task.NewStoreImpl(redis, uuidGen)
-			handler = route.NewTaskHandlerImpl(taskStore)
+			config := &model.Config{
+				Manager: model.ManagerInfo{
+					ExecutionQueueSize: 10,
+					TaskQueueSize:      10,
+				},
+			}
+			handler = route.NewTaskHandlerImpl(taskStore, config)
 		})
 
 		It("should return an error if reading body fails", func() {
@@ -92,6 +99,29 @@ var _ = Describe("task handler", func() {
 			id, err := uuid.FromString(writer.Body.String())
 			assert.Nil(context, err)
 			assert.NotNil(context, id)
+		})
+
+		It("should return error of task queue size is greater than max task queue size", func() {
+			// Arrange
+			config := &model.Config{
+				Manager: model.ManagerInfo{
+					ExecutionQueueSize: 10,
+					TaskQueueSize:      0,
+				},
+			}
+			handler = route.NewTaskHandlerImpl(taskStore, config)
+			givenID := uuid.Must(uuid.NewV4())
+			taskStore.PushTask(&givenID)
+			taskString := `{"name": "test", "image": "alpine", "init": "init.sh"}`
+			req, _ := http.NewRequest("POST", "/handle", bytes.NewReader([]byte(taskString)))
+			writer := httptest.NewRecorder()
+
+			// Act
+			handler.CreateTask(writer, req)
+
+			// Assert
+			assert.Equal(context, 500, writer.Code)
+			assert.Equal(context, writer.Body.String(), "Failed to create task, task queue has reached its limit!\n")
 		})
 	})
 })
