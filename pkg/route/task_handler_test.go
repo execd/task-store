@@ -7,8 +7,8 @@ import (
 	"github.com/alicebob/miniredis"
 	"github.com/execd/task-store/mocks"
 	"github.com/execd/task-store/pkg/model"
+	"github.com/execd/task-store/pkg/redis"
 	"github.com/execd/task-store/pkg/route"
-	"github.com/execd/task-store/pkg/store"
 	"github.com/execd/task-store/pkg/task"
 	"github.com/execd/task-store/pkg/util"
 	. "github.com/onsi/ginkgo"
@@ -32,7 +32,7 @@ var _ = Describe("task handler", func() {
 			panic(err)
 		}
 		directRedis = s
-		redis := store.NewClient(s.Addr())
+		redis := redis.NewClient(s.Addr())
 		uuidGen := util.NewUUIDGenImpl()
 		taskStore = task.NewStoreImpl(redis, uuidGen)
 		config := &model.Config{
@@ -132,7 +132,6 @@ var _ = Describe("task handler", func() {
 		It("should return the task related to the given id", func() {
 			// Arrange
 			givenTaskSpec := model.Spec{
-				Name:     "test",
 				Image:    "alpine",
 				Init:     "init.sh",
 				InitArgs: []string{"10"},

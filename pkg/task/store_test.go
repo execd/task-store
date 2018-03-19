@@ -5,7 +5,7 @@ import (
 	"github.com/alicebob/miniredis"
 	"github.com/execd/task-store/mocks"
 	"github.com/execd/task-store/pkg/model"
-	"github.com/execd/task-store/pkg/store"
+	"github.com/execd/task-store/pkg/redis"
 	"github.com/execd/task-store/pkg/task"
 	. "github.com/onsi/ginkgo"
 	"github.com/satori/go.uuid"
@@ -28,12 +28,11 @@ var _ = Describe("store", func() {
 			panic(err)
 		}
 
-		redis := store.NewClient(s.Addr())
+		redis := redis.NewClient(s.Addr())
 		uuidGenMock = mocks.UUIDGen{}
 		taskStore = task.NewStoreImpl(redis, &uuidGenMock)
 		directRedis = s
 		givenTaskSpec = model.Spec{
-			Name:     "test",
 			Image:    "alpine",
 			Init:     "init.sh",
 			InitArgs: []string{"10"},
@@ -191,7 +190,6 @@ var _ = Describe("store", func() {
 			// Assert
 			assert.Nil(context, err)
 			assert.Equal(context, id, task.ID)
-			assert.Equal(context, givenTaskSpec.Name, task.Name)
 			assert.Equal(context, givenTaskSpec.Init, task.Init)
 			assert.Equal(context, givenTaskSpec.InitArgs, task.InitArgs)
 			assert.Equal(context, givenTaskSpec.Image, task.Image)

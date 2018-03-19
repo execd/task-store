@@ -13,25 +13,26 @@ import (
 var context = GinkgoT()
 
 var _ = Describe("manage tasks", func() {
-	Describe("manage task creation", func() {
-		var taskStoreMock *mocks.Store
-		var eventManagerMock *mocks.EventManager
-		var taskManager *manager.TaskManagerImpl
-		var quit chan int
+	var taskStoreMock *mocks.Store
+	var eventManagerMock *mocks.EventManager
+	var taskManager *manager.TaskManagerImpl
+	var quit chan int
 
-		BeforeEach(func() {
-			taskStoreMock = &mocks.Store{}
-			eventManagerMock = &mocks.EventManager{}
-			config := &model.Config{
-				Manager: model.ManagerInfo{
-					ExecutionQueueSize: 2,
-					TaskQueueSize:      1,
-				},
-			}
-			eventManagerMock.On("ListenForProgress", mock.Anything).Return(nil, nil)
-			taskManager = manager.NewTaskManagerImpl(taskStoreMock, eventManagerMock, config)
-			quit = make(chan int)
-		})
+	BeforeEach(func() {
+		taskStoreMock = &mocks.Store{}
+		eventManagerMock = &mocks.EventManager{}
+		config := &model.Config{
+			Manager: model.ManagerInfo{
+				ExecutionQueueSize: 2,
+				TaskQueueSize:      1,
+			},
+		}
+		eventManagerMock.On("ListenForProgress", mock.Anything).Return(nil, nil)
+		taskManager = manager.NewTaskManagerImpl(taskStoreMock, eventManagerMock, config)
+		quit = make(chan int)
+	})
+
+	Describe("manage task creation", func() {
 
 		It("should not continue if there is a failure to check the execution set size", func() {
 			// Arrange

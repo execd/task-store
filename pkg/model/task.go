@@ -7,12 +7,11 @@ import (
 
 // Spec is the specification for a task
 type Spec struct {
-	ID       *uuid.UUID `json:"id"`
+	ID       *uuid.UUID        `json:"id"`
 	Metadata map[string]string `json:"metadata"`
-	Name     string     `json:"name"`
-	Image    string     `json:"image"`
-	Init     string     `json:"init"`
-	InitArgs []string   `json:"initArgs"`
+	Image    string            `json:"image"`
+	Init     string            `json:"init"`
+	InitArgs []string          `json:"initArgs"`
 }
 
 // MarshalBinary marshals a Spec
@@ -28,7 +27,7 @@ func (s *Spec) UnmarshalBinary(data []byte) error {
 // Info : task information
 type Info struct {
 	ID           *uuid.UUID     `json:"id"`
-	Metadata     interface{}    `json:"metadata"`
+	Metadata     interface{}    `json:"metadata,omitempty"`
 	Succeeded    bool           `json:"succeeded"`
 	FailureStats *FailureStatus `json:"failureStats,omitempty"`
 }

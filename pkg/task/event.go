@@ -1,9 +1,10 @@
 package task
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/execd/task-store/pkg/event"
 	"github.com/execd/task-store/pkg/model"
+	"github.com/execd/task-store/pkg/rabbit"
 )
 
 // EventManager : interface for an event listener
@@ -14,11 +15,11 @@ type EventManager interface {
 
 // EventManagerImpl : implementation of an event listener
 type EventManagerImpl struct {
-	rabbit event.Rabbit
+	rabbit rabbit.Service
 }
 
 // NewEventManagerImpl : build a ListenerImpl
-func NewEventManagerImpl(rabbit event.Rabbit) (*EventManagerImpl, error) {
+func NewEventManagerImpl(rabbit rabbit.Service) (*EventManagerImpl, error) {
 	return &EventManagerImpl{rabbit: rabbit}, nil
 }
 
@@ -30,21 +31,28 @@ func (e *EventManagerImpl) PublishWork(task *model.Spec) error {
 
 // ListenForProgress : listen for task progress
 func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Info, <-chan error) {
-	status := make(chan model.Info)
+	status := make(chan model.Info, 100)
 	errors := make(chan error)
 	incoming := e.rabbit.GetTaskStatusQueueChan()
 	go func() {
 		defer close(status)
 		for {
 			select {
-			case msg := <-incoming:
+			case msg, ok := <-incoming:
+				if !ok {
+					fmt.Println("Incoming task complete event channel not ok!")
+					continue
+				}
 				info := new(model.Info)
-				err := info.UnmarshalBinary(msg.Body())
+				err := json.Unmarshal(msg.Body(), info)
 				if err != nil {
+					fmt.Println("error occurred unmarshalling data")
 					errors <- fmt.Errorf("error occurred unmarshalling data (%s) : %s", string(msg.Body()[:]), err.Error())
 				} else {
-					status <- *info
+					i := *info
+					status <- i
 				}
+				msg.Ack(false)
 			case <-quit:
 				fmt.Println("Stopping task listener.")
 				return

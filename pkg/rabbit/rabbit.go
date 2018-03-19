@@ -1,4 +1,4 @@
-package event
+package rabbit
 
 import (
 	"github.com/NeowayLabs/wabbit"
@@ -9,14 +9,14 @@ import (
 
 const queueName = "work_queue"
 
-// Rabbit : interface for building rabbit services
-type Rabbit interface {
+// Service : interface for building rabbit services
+type Service interface {
 	GetTaskStatusQueueChan() <-chan wabbit.Delivery
 	PublishWork(task *model.Spec) error
 }
 
-// RabbitImpl : service to interact with rabbit
-type RabbitImpl struct {
+// ServiceImpl : service to interact with rabbit
+type ServiceImpl struct {
 	connection          wabbit.Conn
 	channel             wabbit.Channel
 	taskStatusQueue     wabbit.Queue
@@ -25,22 +25,20 @@ type RabbitImpl struct {
 	workQueueName       string
 }
 
-// NewRabbitServiceImpl : build a new connection to rabbitmq
-func NewRabbitServiceImpl(address string) (*RabbitImpl, error) {
-
-	r := &RabbitImpl{}
+// NewRabbitMqImpl : build a new connection to rabbitmq
+func NewRabbitMqImpl(address string) (*ServiceImpl, error) {
+	r := &ServiceImpl{}
 	r.initialize(address)
-
 	return r, nil
 }
 
 // GetTaskStatusQueueChan : get the work queue channel
-func (r *RabbitImpl) GetTaskStatusQueueChan() <-chan wabbit.Delivery {
+func (r *ServiceImpl) GetTaskStatusQueueChan() <-chan wabbit.Delivery {
 	return r.taskStatusQueueChan
 }
 
 // PublishWork : publish work on the work queue
-func (r *RabbitImpl) PublishWork(task *model.Spec) error {
+func (r *ServiceImpl) PublishWork(task *model.Spec) error {
 	data, err := task.MarshalBinary()
 	if err != nil {
 		return err
@@ -51,7 +49,7 @@ func (r *RabbitImpl) PublishWork(task *model.Spec) error {
 	return r.channel.Publish("", r.workQueueName, data, opts)
 }
 
-func (r *RabbitImpl) initialize(address string) {
+func (r *ServiceImpl) initialize(address string) {
 	c := make(chan wabbit.Error)
 	go func() {
 		err := <-c
@@ -76,7 +74,7 @@ func (r *RabbitImpl) initialize(address string) {
 	r.declareTaskQueue()
 }
 
-func (r *RabbitImpl) initializeWorkQueueConsumer() {
+func (r *ServiceImpl) initializeWorkQueueConsumer() {
 	workQueue, err := r.channel.QueueDeclare(
 		queueName,
 		wabbit.Option{
@@ -98,7 +96,7 @@ func (r *RabbitImpl) initializeWorkQueueConsumer() {
 	r.workQueueName = workQueue.Name()
 }
 
-func (r *RabbitImpl) declareTaskQueue() {
+func (r *ServiceImpl) declareTaskQueue() {
 	name := "task_status_queue"
 	taskStatusQueue, err := r.channel.QueueDeclare(
 		name,
@@ -110,7 +108,7 @@ func (r *RabbitImpl) declareTaskQueue() {
 		},
 	)
 	if err != nil {
-		panic("Could not setup task_queue")
+		panic("Could not setup task_status_queue")
 	}
 	taskStatusQueueChan, err := r.channel.Consume(
 		taskStatusQueue.Name(),
@@ -123,7 +121,7 @@ func (r *RabbitImpl) declareTaskQueue() {
 		},
 	)
 	if err != nil {
-		panic("Could not setup task_queue")
+		panic("Could not setup task_status_queue")
 	}
 	r.taskStatusQueueChan = taskStatusQueueChan
 	r.taskStatusQueue = taskStatusQueue
