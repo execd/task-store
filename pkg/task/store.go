@@ -30,7 +30,7 @@ type Store interface {
 
 	PublishTaskCreatedEvent(id *uuid.UUID)
 	ListenForTaskCreatedEvents() <-chan *uuid.UUID
-	UpdateTaskInfo(info *model.Info) error
+	UpdateTaskInfo(info *model.Status) error
 }
 
 // NewStoreImpl : build a StoreImpl
@@ -148,7 +148,7 @@ func (s *StoreImpl) ListenForTaskCreatedEvents() <-chan *uuid.UUID {
 }
 
 // UpdateTaskInfo : update task information
-func (s *StoreImpl) UpdateTaskInfo(info *model.Info) error {
+func (s *StoreImpl) UpdateTaskInfo(info *model.Status) error {
 	bytes, _ := info.MarshalBinary()
 	_, err := s.redis.SetNX(buildTaskInfoKey(info), string(bytes[:]), 0).Result()
 	return err
@@ -158,6 +158,6 @@ func buildTaskKey(id *uuid.UUID) string {
 	return fmt.Sprintf("%s:%s", taskPrefix, id.String())
 }
 
-func buildTaskInfoKey(info *model.Info) string {
+func buildTaskInfoKey(info *model.Status) string {
 	return fmt.Sprintf("%s:%s:%s", taskPrefix, info.ID.String(), infoPostFix)
 }

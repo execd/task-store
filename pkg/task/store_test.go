@@ -325,7 +325,7 @@ var _ = Describe("store", func() {
 			// Arrange
 			directRedis.Close()
 			id := uuid.Must(uuid.NewV4())
-			info := &model.Info{
+			info := &model.Status{
 				ID: &id,
 			}
 

@@ -51,7 +51,7 @@ var _ = Describe("event", func() {
 			quit := make(chan int, 1)
 			defer close(quit)
 			id := uuid.Must(uuid.NewV4())
-			expectedInfo := &model.Info{
+			expectedInfo := &model.Status{
 				ID: &id,
 			}
 			data, err := expectedInfo.MarshalBinary()

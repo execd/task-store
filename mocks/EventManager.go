@@ -9,15 +9,15 @@ type EventManager struct {
 }
 
 // ListenForProgress provides a mock function with given fields: quit
-func (_m *EventManager) ListenForProgress(quit <-chan int) (<-chan model.Info, <-chan error) {
+func (_m *EventManager) ListenForProgress(quit <-chan int) (<-chan model.Status, <-chan error) {
 	ret := _m.Called(quit)
 
-	var r0 <-chan model.Info
-	if rf, ok := ret.Get(0).(func(<-chan int) <-chan model.Info); ok {
+	var r0 <-chan model.Status
+	if rf, ok := ret.Get(0).(func(<-chan int) <-chan model.Status); ok {
 		r0 = rf(quit)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(<-chan model.Info)
+			r0 = ret.Get(0).(<-chan model.Status)
 		}
 	}
 

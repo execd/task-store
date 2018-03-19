@@ -213,11 +213,11 @@ func (_m *Store) TaskQueueSize() (int64, error) {
 }
 
 // UpdateTaskInfo provides a mock function with given fields: info
-func (_m *Store) UpdateTaskInfo(info *model.Info) error {
+func (_m *Store) UpdateTaskInfo(info *model.Status) error {
 	ret := _m.Called(info)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*model.Info) error); ok {
+	if rf, ok := ret.Get(0).(func(*model.Status) error); ok {
 		r0 = rf(info)
 	} else {
 		r0 = ret.Error(0)

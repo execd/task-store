@@ -10,7 +10,7 @@ import (
 // EventManager : interface for an event listener
 type EventManager interface {
 	PublishWork(task *model.Spec) error
-	ListenForProgress(quit <-chan int) (<-chan model.Info, <-chan error)
+	ListenForProgress(quit <-chan int) (<-chan model.Status, <-chan error)
 }
 
 // EventManagerImpl : implementation of an event listener
@@ -30,8 +30,8 @@ func (e *EventManagerImpl) PublishWork(task *model.Spec) error {
 }
 
 // ListenForProgress : listen for task progress
-func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Info, <-chan error) {
-	status := make(chan model.Info, 100)
+func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Status, <-chan error) {
+	status := make(chan model.Status, 100)
 	errors := make(chan error)
 	incoming := e.rabbit.GetTaskStatusQueueChan()
 	go func() {
@@ -43,7 +43,7 @@ func (e *EventManagerImpl) ListenForProgress(quit <-chan int) (<-chan model.Info
 					fmt.Println("Incoming task complete event channel not ok!")
 					continue
 				}
-				info := new(model.Info)
+				info := new(model.Status)
 				err := json.Unmarshal(msg.Body(), info)
 				if err != nil {
 					fmt.Println("error occurred unmarshalling data")

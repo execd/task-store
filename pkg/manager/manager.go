@@ -90,7 +90,7 @@ func (t *TaskManagerImpl) scheduleForExecution(taskID *uuid.UUID) {
 	fmt.Printf("Task %s successfully added to executing set\n", taskID.String())
 }
 
-func (t *TaskManagerImpl) handleTaskProgressInfo(info *model.Info) {
+func (t *TaskManagerImpl) handleTaskProgressInfo(info *model.Status) {
 	fmt.Printf("Received completion status for task %s\n", info.ID.String())
 	err := t.store.UpdateTaskInfo(info)
 	if err != nil {
