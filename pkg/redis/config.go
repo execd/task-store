@@ -1,4 +1,4 @@
-package store
+package redis
 
 import "github.com/go-redis/redis"
 

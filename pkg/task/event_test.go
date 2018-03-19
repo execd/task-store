@@ -2,7 +2,6 @@ package task_test
 
 import (
 	"github.com/NeowayLabs/wabbit"
-	"github.com/NeowayLabs/wabbit/amqptest/server"
 	"github.com/execd/task-store/mocks"
 	"github.com/execd/task-store/pkg/model"
 	"github.com/execd/task-store/pkg/task"
@@ -59,14 +58,13 @@ var _ = Describe("event", func() {
 			assert.Nil(context, err)
 
 			rabbitMock.On("GetTaskStatusQueueChan").Return(buildMsgChan(data))
-			timeout := time.After(time.Millisecond * 5)
+			timeout := time.After(time.Millisecond * 50)
 
 			// Act
 			status, _ := eventListener.ListenForProgress(quit)
 
 			// Assert
 			select {
-
 			case info, ok := <-status:
 				if !ok {
 					status = nil
@@ -106,7 +104,9 @@ var _ = Describe("event", func() {
 
 func buildMsgChan(data []byte) <-chan wabbit.Delivery {
 	msgs := make(chan wabbit.Delivery, 1)
-	msg := server.NewDelivery(nil, data, 0, "", wabbit.Option{})
-	msgs <- msg
+	msg := mocks.MockDelivery{
+		Data: data,
+	}
+	msgs <- &msg
 	return msgs
 }

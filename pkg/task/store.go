@@ -150,7 +150,7 @@ func (s *StoreImpl) ListenForTaskCreatedEvents() <-chan *uuid.UUID {
 // UpdateTaskInfo : update task information
 func (s *StoreImpl) UpdateTaskInfo(info *model.Info) error {
 	bytes, _ := info.MarshalBinary()
-	_, err := s.redis.SAdd(buildTaskInfoKey(info), string(bytes[:])).Result()
+	_, err := s.redis.SetNX(buildTaskInfoKey(info), string(bytes[:]), 0).Result()
 	return err
 }
 

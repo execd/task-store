@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/execd/task-store/pkg/config"
-	"github.com/execd/task-store/pkg/event"
 	"github.com/execd/task-store/pkg/manager"
 	"github.com/execd/task-store/pkg/model"
+	"github.com/execd/task-store/pkg/rabbit"
+	"github.com/execd/task-store/pkg/redis"
 	"github.com/execd/task-store/pkg/route"
-	"github.com/execd/task-store/pkg/store"
 	"github.com/execd/task-store/pkg/task"
 	"github.com/execd/task-store/pkg/util"
 	"github.com/gorilla/mux"
@@ -33,11 +33,11 @@ func main() {
 }
 
 func initializeAndLaunchManager(taskStore task.Store, config *model.Config) {
-	rabbit, err := event.NewRabbitServiceImpl("amqp://localhost:5672")
+	rabbitMq, err := rabbit.NewRabbitMqImpl("amqp://localhost:5672")
 	if err != nil {
 		panic(err.Error())
 	}
-	eventManager, err := task.NewEventManagerImpl(rabbit)
+	eventManager, err := task.NewEventManagerImpl(rabbitMq)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -48,9 +48,9 @@ func initializeAndLaunchManager(taskStore task.Store, config *model.Config) {
 }
 
 func initializeStore() task.Store {
-	redis := store.NewClient("localhost:6379")
+	redisDb := redis.NewClient("localhost:6379")
 	uuidGen := util.NewUUIDGenImpl()
-	return task.NewStoreImpl(redis, uuidGen)
+	return task.NewStoreImpl(redisDb, uuidGen)
 }
 
 func initializeRouter(taskStore task.Store, config *model.Config) *mux.Router {

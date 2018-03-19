@@ -31,11 +31,23 @@ func (t *TaskManagerImpl) ManageTasks(quit <-chan int) {
 	go func() {
 		for {
 			select {
-			case taskID := <-t.store.ListenForTaskCreatedEvents():
+			case taskID, ok := <-t.store.ListenForTaskCreatedEvents():
+				if !ok {
+					fmt.Println("Task create channel not ok!")
+					continue
+				}
 				t.scheduleForExecution(taskID)
-			case info := <-infoCh:
+			case info, ok := <-infoCh:
+				if !ok {
+					fmt.Println("Task info channel not ok!")
+					continue
+				}
 				t.handleTaskProgressInfo(&info)
-			case err := <-errCh:
+			case err, ok := <-errCh:
+				if !ok {
+					fmt.Println("Task error channel not ok!")
+					continue
+				}
 				fmt.Printf("Received error from task progress watcher: %s\n", err.Error())
 			case <-quit:
 				progressChQuit <- 1
@@ -79,6 +91,7 @@ func (t *TaskManagerImpl) scheduleForExecution(taskID *uuid.UUID) {
 }
 
 func (t *TaskManagerImpl) handleTaskProgressInfo(info *model.Info) {
+	fmt.Printf("Received completion status for task %s\n", info.ID.String())
 	err := t.store.UpdateTaskInfo(info)
 	if err != nil {
 		fmt.Printf("Received error trying to update task info: %s\n", err.Error())
